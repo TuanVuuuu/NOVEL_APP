@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     loadNovelData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.find<HomePageCubit>().getListNovel();
+      // Get.find<HomePageCubit>().getListNovel();
     });
   }
 

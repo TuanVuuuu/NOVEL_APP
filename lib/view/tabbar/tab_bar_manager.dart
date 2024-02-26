@@ -15,7 +15,12 @@ class _TabBarManagerState extends State<TabBarManager> {
   int menuIndex = 0;
   int tabIndex = 0;
   bool isGrid = false;
-  List<String> listIndexTitle = ['Khám phá', 'Tủ sách', 'Hồ sơ', 'Admin'];
+  List<String> listIndexTitle = [
+    'Khám phá',
+    'Tủ sách',
+    'Hồ sơ',
+    'Admin',
+  ];
 
   @override
   void initState() {
