@@ -9,6 +9,8 @@ import 'package:get/route_manager.dart';
 import 'src/data/core/api_helper.dart';
 import 'src/data/service/setup_service_locator.dart';
 
+RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
   runApp(const AudioBooksApp());
@@ -26,7 +28,7 @@ class AudioBooksApp extends StatelessWidget {
       navigatorKey: AppRouteExt.navigatorKey,
       key: key,
       theme: CustomTheme.fromContext(context).appTheme,
-      // initialRoute: AppRoute.audiobooks.name,
+      navigatorObservers: <NavigatorObserver>[routeObserver],
       routes: {
         '/': (context) => const TabBarManager(),
       },

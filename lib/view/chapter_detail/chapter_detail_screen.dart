@@ -83,7 +83,10 @@ class _ChapterScreenState extends State<ChapterScreen> {
               _buildTitle(),
               loadState == LoadState.loadSuccess
                   ? _buildContent()
-                  : const SliverToBoxAdapter(child: PharagraphLoadingShimmer()),
+                  : const SliverToBoxAdapter(
+                      child: PharagraphLoadingShimmer(
+                      itemCount: 10,
+                    )),
               SliverToBoxAdapter(child: _buildListener()),
               const SliverToBoxAdapter(
                   child: SizedBox(
@@ -266,6 +269,13 @@ class _ChapterScreenState extends State<ChapterScreen> {
             final jsonChapterContent = jsonEncode(chapterContent.toJson());
             listChapterContent.add(jsonChapterContent);
           });
+
+          List<String>? getLocalChapterData = [];
+          await SharedPrefManager.getLocalChapterData()?.then((value) {
+            getLocalChapterData = value;
+          });
+
+          listChapterContent.addAll(getLocalChapterData ?? []);
 
           await SharedPrefManager.setLocalChapterData(
               value: listChapterContent);

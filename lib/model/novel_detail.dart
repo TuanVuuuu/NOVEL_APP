@@ -14,6 +14,8 @@ class NovelDetail {
   List<String>? description;
   List<Chapter>? chapterLatest;
   List<Chapter>? chapterList;
+  String? image;
+  String? href;
 
   NovelDetail(
       {this.title,
@@ -28,7 +30,9 @@ class NovelDetail {
       this.ratingCount,
       this.description,
       this.chapterLatest,
-      this.chapterList});
+      this.chapterList,
+      this.image,
+      this.href});
 
   NovelDetail.fromJson(Map<String, dynamic> json) {
     title = json['title'];
@@ -54,6 +58,8 @@ class NovelDetail {
         chapterList!.add(Chapter.fromJson(v));
       });
     }
+    image = json['image'];
+    href = json['href'];
   }
 
   Map<String, dynamic> toJson() {
@@ -75,6 +81,8 @@ class NovelDetail {
     if (chapterList != null) {
       data['chapterList'] = chapterList!.map((v) => v.toJson()).toList();
     }
+    data['image'] = image;
+    data['href'] = href;
     return data;
   }
 }

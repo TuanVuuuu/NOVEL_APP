@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:another_carousel_pro/another_carousel_pro.dart';
+import 'package:audiobook/commponent/item_novel_widget.dart';
 import 'package:audiobook/commponent/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/src/shared/app_route.dart';
@@ -28,7 +29,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     loadNovelData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Get.find<HomePageCubit>().getListNovel();
+      Get.find<HomePageCubit>().getListNovel();
     });
   }
 
@@ -113,33 +114,11 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () {
-                          Get.toNamed(AppRoute.novelinfo.name, arguments: [novelTrendList[index]]);
+                          Get.toNamed(AppRoute.novelinfo.name,
+                              arguments: [novelTrendList[index]]);
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          height: MediaQuery.of(context).size.height * 0.2,
-                          width: MediaQuery.of(context).size.width * 0.3,
-                          child: Column(children: [
-                            Container(
-                              height:
-                                  MediaQuery.of(context).size.height * 0.175,
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        novelTrendList[index].image ?? ''),
-                                    fit: BoxFit.cover,
-                                  )),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              novelTrendList[index].title ?? '',
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            )
-                          ]),
-                        ),
+                        child: ItemNovelWidget(
+                            novelTrendList: novelTrendList, index: index),
                       );
                     },
                   ),

@@ -4,6 +4,7 @@ void apiLogger(String api, dynamic param) {
   if (kDebugMode) {
     print('API: $api');
     print(param);
+    print('Time: ${DateTime.now()}');
   }
 }
 

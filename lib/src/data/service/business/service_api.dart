@@ -60,7 +60,7 @@ class ServiceApi implements ServiceRepository {
 
   @override
   Future<NovelDetail> getNovelInfo({required String href}) async {
-    final url = Uri.parse("https://novel-api-mo19.onrender.com/novel/$href/");
+    final url = Uri.parse("https://novel-api-mo19.onrender.com$href/");
 
     try {
       apiLogger('getNovelInfo', url.toString());

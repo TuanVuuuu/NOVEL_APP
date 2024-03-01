@@ -7,9 +7,9 @@ class SharedPrefManager {
   SharedPrefManager._();
 
   /** 
-    * Get key local device token
-    * Params: serialNumber
-    * Response: String
+    * Get local chapter
+    * Params: 
+    * Response: List<String>
   */
   static Future<List<String>?>? getLocalChapterData() async {
     final result = await SharedPrefUtils.getStringList(key: CHAPTER_DATA);
@@ -17,7 +17,7 @@ class SharedPrefManager {
   }
 
   /** 
-    * Set local devices
+    * Set local chapter
     * Params: value
     * Response: bool
   */
@@ -25,6 +25,28 @@ class SharedPrefManager {
       {required List<String> value}) async {
     final result =
         await SharedPrefUtils.saveStringList(key: CHAPTER_DATA, value: value);
+    return result;
+  }
+
+/** 
+    * Get local novel
+    * Params: 
+    * Response: List<String>
+  */
+  static Future<List<String>?>? getLocalNovelData() async {
+    final result = await SharedPrefUtils.getStringList(key: NOVEL_DATA);
+    return result;
+  }
+
+  /** 
+    * Set local chapter
+    * Params: value
+    * Response: bool
+  */
+  static Future<bool?>? setLocalNovelData(
+      {required List<String> value}) async {
+    final result =
+        await SharedPrefUtils.saveStringList(key: NOVEL_DATA, value: value);
     return result;
   }
 }

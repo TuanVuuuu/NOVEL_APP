@@ -39,7 +39,7 @@ class _AutoGetDataState extends State<AutoGetData> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.find<AutoGetDataCubit>().getListNovel();
+      // Get.find<AutoGetDataCubit>().getListNovel();
     });
   }
 
