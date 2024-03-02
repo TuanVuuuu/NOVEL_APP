@@ -15,62 +15,74 @@ class SharedPrefUtils {
   }
 
   /// Saves a boolean value with the given key to SharedPreferences
-  static Future<bool> saveBool({required String key, required bool value}) async {
-    return (await _sharedPrefs()).setBool(key, value);
+  static Future<void> saveBool({required String key, required bool value}) async {
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.setBool(key, value);
   }
 
   /// Saves an integer value with the given key to SharedPreferences
-  static Future<bool> saveInt({required String key, required int value}) async {
-    return (await _sharedPrefs()).setInt(key, value);
+  static Future<void> saveInt({required String key, required int value}) async {
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.setInt(key, value);
   }
 
   /// Saves a double value with the given key to SharedPreferences
-  static Future<bool> saveDouble({required String key, required double value}) async {
-    return (await _sharedPrefs()).setDouble(key, value);
+  static Future<void> saveDouble({required String key, required double value}) async {
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.setDouble(key, value);
   }
 
   /// Saves a string value with the given key to SharedPreferences
-  static Future<bool> saveString({required String key, required String value}) async {
-    return (await _sharedPrefs()).setString(key, value);
+  static Future<void> saveString({required String key, required String value}) async {
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.setString(key, value);
   }
 
   /// Saves a list of strings with the given key to SharedPreferences
-  static Future<bool> saveStringList({required String key, required List<String> value}) async {
-    return (await _sharedPrefs()).setStringList(key, value);
+  static Future<void> saveStringList({required String key, required List<String> value}) async {
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.setStringList(key, value);
   }
 
   /// Retrieves a boolean value with the given key from SharedPreferences
   static Future<bool?> getBool({required String key}) async {
-    return (await _sharedPrefs()).getBool(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    return prefs.getBool(key);
   }
 
   /// Retrieves an integer value with the given key from SharedPreferences
   static Future<int?> getInt({required String key}) async {
-    return (await _sharedPrefs()).getInt(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    return prefs.getInt(key);
   }
 
   /// Retrieves a double value with the given key from SharedPreferences
   static Future<double?> getDouble({required String key}) async {
-    return (await _sharedPrefs()).getDouble(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    return prefs.getDouble(key);
   }
 
   /// Retrieves a string value with the given key from SharedPreferences
   static Future<String?> getString({required String key}) async {
-    return (await _sharedPrefs()).getString(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    return prefs.getString(key);
   }
 
   /// Retrieves a list of strings with the given key from SharedPreferences
   static Future<List<String>?> getStringList({required String key}) async {
-    return (await _sharedPrefs()).getStringList(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    return prefs.getStringList(key);
   }
 
   /// Removing data from SharedPreferences
   static Future<void> removeData({required String key}) async {
-    await (await _sharedPrefs()).remove(key);
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.remove(key);
   }
 
   /// Clearing all data from SharedPreferences
   static Future<void> clearData() async {
-    await (await _sharedPrefs()).clear();
+    final SharedPreferences prefs = await _sharedPrefs();
+    await prefs.clear();
   }
 }

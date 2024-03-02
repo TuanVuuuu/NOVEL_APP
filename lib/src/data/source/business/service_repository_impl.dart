@@ -21,6 +21,15 @@ class ServiceStorageRepository implements ServiceRepository {
 
   @override
   Future<NovelDetail> getNovelInfo({required String href}) {
-    return api.getNovelInfo(href: href).catchError((object) => throw object.toString());
+    return api
+        .getNovelInfo(href: href)
+        .catchError((object) => throw object.toString());
+  }
+
+  @override
+  Future<List<Novel>> searchNovelByTitle({String? title}) {
+    return api
+        .searchNovelByTitle(title: title)
+        .catchError((object) => throw object.toString());
   }
 }

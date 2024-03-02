@@ -1,7 +1,6 @@
-import 'package:audiobook/admin/view/auto_get_data.dart';
+import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/view/home_page/home_page.dart';
 import 'package:audiobook/view/library_novel/library_novel_page.dart';
-import 'package:audiobook/view/text_to_speech/text_to_speech.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -40,7 +39,7 @@ class _TabBarManagerState extends State<TabBarManager> {
         actions: [
           IconButton(
             onPressed: () {
-              Get.to(() => const TextToSpeechPage());
+              Get.toNamed(AppRoute.searchnovel.name);
             },
             icon: const Icon(Icons.search),
           ),

@@ -13,7 +13,8 @@ class ServiceApi implements ServiceRepository {
 
   @override
   Future<ChapterContent> getChapterContent({required String href}) async {
-    final url = Uri.parse("https://novel-api-mo19.onrender.com/v1/novel/$href/");
+    final url =
+        Uri.parse("https://novel-api-mo19.onrender.com/v1/novel/$href/");
 
     try {
       apiLogger('getChapterContent', url.toString());
@@ -35,8 +36,8 @@ class ServiceApi implements ServiceRepository {
 
   @override
   Future<List<Novel>> getListNovel() async {
-    final url =
-        Uri.parse("https://novel-api-mo19.onrender.com/v1/novel/de-cu/danh-sach/page-1");
+    final url = Uri.parse(
+        "https://novel-api-mo19.onrender.com/v1/novel/de-cu/danh-sach/page-1");
 
     try {
       apiLogger('getListNovel', url.toString());
@@ -68,6 +69,31 @@ class ServiceApi implements ServiceRepository {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return NovelDetail.fromJson(data.first);
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error: $error');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Novel>> searchNovelByTitle({String? title}) async {
+    final url = Uri.parse(
+        "https://novel-api-mo19.onrender.com/v1/novel/search/$title/page-1");
+
+    try {
+      apiLogger('searchNovelByTitle', url.toString());
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        List<Novel> novels =
+            jsonData.map((json) => Novel.fromJson(json)).toList();
+        return novels;
       } else {
         throw Exception('Failed to load data');
       }

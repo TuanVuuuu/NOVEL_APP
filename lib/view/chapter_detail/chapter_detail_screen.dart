@@ -271,7 +271,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
           });
 
           List<String>? getLocalChapterData = [];
-          await SharedPrefManager.getLocalChapterData()?.then((value) {
+          await SharedPrefManager.getLocalChapterData().then((value) {
             getLocalChapterData = value;
           });
 

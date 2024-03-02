@@ -1,5 +1,7 @@
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
+import 'package:audiobook/view/search_page/cubit/search_page_cubit.dart';
+import 'package:audiobook/view/search_page/search_novel_screen.dart';
 import 'package:audiobook/view/tabbar/tab_bar_manager.dart';
 import 'package:audiobook/src/shared/page_material_route.dart';
 import 'package:audiobook/view/chapter_detail/chapter_detail_screen.dart';
@@ -11,7 +13,7 @@ import 'package:audiobook/view/novel_info/novel_info_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-enum AppRoute { tabbarmanager, chapterdetail, homepage, novelinfo }
+enum AppRoute { tabbarmanager, chapterdetail, homepage, novelinfo, searchnovel }
 
 extension AppRouteExt on AppRoute {
   String get name {
@@ -24,6 +26,8 @@ extension AppRouteExt on AppRoute {
         return '/homepage';
       case AppRoute.novelinfo:
         return '/novelinfo';
+      case AppRoute.searchnovel:
+        return '/searchnovel';
     }
   }
 
@@ -78,6 +82,15 @@ extension AppRouteExt on AppRoute {
             page: () => NovelInfoScreen(novelData: novelData),
             bindings: [
               BindingsBuilder.put(() => NovelInfoCubit(Get.find())),
+            ],
+            transition: Transition.rightToLeft);
+
+      case AppRoute.searchnovel:
+        return PageMaterialRoute(
+            settings: settings,
+            page: () => const SearchNovelScreen(),
+            bindings: [
+              BindingsBuilder.put(() => SearchPageCubit(Get.find())),
             ],
             transition: Transition.rightToLeft);
 
