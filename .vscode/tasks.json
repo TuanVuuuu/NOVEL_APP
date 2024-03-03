@@ -1,0 +1,60 @@
+{
+	// See https://go.mi crosoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		//-----RUN_DEBUG_MODE-----
+		{
+			"label": "run_test",
+			"type": "shell",
+			"command": "./_scripts/test.sh",
+			"windows": {
+				"command": ".\\_scripts\\test.cmd"
+			}
+		},
+		//-----BUILD_LAUNCHER_ICONS-----
+		{
+			"label": "flutter_create_launcher_icons",
+			"type": "shell",
+			"command": "flutter pub run flutter_launcher_icons:main"
+		},
+		//-----BUILD_NATIVE_SPLASH-----
+		{
+			"label": "flutter_create_native_splash",
+			"type": "shell",
+			"command": "flutter pub run flutter_native_splash:create"
+		},
+		{
+			"label": "flutter_remove_native_splash",
+			"type": "shell",
+			"command": "cd one_link/; flutter pub run flutter_native_splash:remove"
+		},
+		//-----BUILD_RUNNER-----
+		{
+			"label": "build_runner ",
+			"type": "shell",
+			"command": "flutter pub run build_runner build --delete-conflicting-outputs",
+			"dependsOn": [
+				"remove_gen_code audiobook"
+			]
+		},
+		//-----LOCALIZATION_GENERATE-----
+		{
+			"label": "easy_localization:generate",
+			"type": "shell",
+			"command": "cd one_assets/; dart run easy_localization:generate --source-dir lib/translations --output-dir lib/translations",
+		},
+		//-----FLUTTER_PUB_GET-----
+		{
+			"label": "flutter_pub_get ",
+			"type": "shell",
+			"command": "flutter pub get"
+		},
+		//-----FLUTTER_CLEAN-----
+		{
+			"label": "flutter_clean",
+			"type": "shell",
+			"command": "flutter clean"
+		},
+	]
+}

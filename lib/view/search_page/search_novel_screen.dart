@@ -5,6 +5,7 @@ import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/search_page/cubit/search_page_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -39,6 +40,13 @@ class _SearchNovelScreenState extends State<SearchNovelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
         title: const Text('Tìm kiếm'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -203,7 +211,7 @@ class _SearchNovelScreenState extends State<SearchNovelScreen> {
             crossAxisCount: 3,
             mainAxisSpacing: 15,
             crossAxisSpacing: 15,
-            childAspectRatio: 1 / 1.8,
+            childAspectRatio: 1 / 1.9,
           ),
         ),
       ],

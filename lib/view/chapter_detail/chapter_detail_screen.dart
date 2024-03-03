@@ -1,12 +1,11 @@
-import 'dart:convert';
-
 import 'package:audiobook/commponent/pharagraph_loading_shimmer.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/chapter_content.dart';
-import 'package:audiobook/src/shared/shared_preference/shared_preferences_manager.dart';
+import 'package:audiobook/model/hive/chapter_item.dart';
+import 'package:audiobook/src/data/service/local/hive_service.dart';
+import 'package:audiobook/src/shared/hive/setup_locator.dart';
 import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/chapter_detail/cubit/chapter_detail_cubit.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -32,6 +31,8 @@ class _ChapterScreenState extends State<ChapterScreen> {
   late ChapterContent chapterContent = ChapterContent();
   int? chapterIndexCurrent;
   List<String> listChapterContent = [];
+  final HiveService _hiveService = locator<HiveService>();
+
   @override
   void initState() {
     super.initState();
@@ -45,31 +46,28 @@ class _ChapterScreenState extends State<ChapterScreen> {
     });
   }
 
-  Future<bool> checkLocalChapterData() async {
-    final localData = await SharedPrefManager.getLocalChapterData();
-    if (localData != null) {
-      for (final jsonString in localData) {
-        try {
-          final jsonData = jsonDecode(jsonString);
-          final chapterContentData = ChapterContent.fromJson(jsonData);
-          if (chapterContentData.href ==
-              widget.listChapterArg[chapterIndexCurrent ?? widget.chapterIndex]
-                  .chapterLink
-                  ?.split('/v1/')[1]) {
-            setState(() {
-              loadState = LoadState.loadSuccess;
-              chapterContent = chapterContentData;
-            });
-            return true;
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error decoding JSON: $e');
-          }
-        }
+  Future<bool> checkLocalChapterData({String? href}) async {
+    final listChaptersLocal = await _hiveService.getAllChapters();
+    bool foundMatchingChapter = false;
+    final String? checkHref = href ??
+        widget.listChapterArg[chapterIndexCurrent ?? widget.chapterIndex]
+            .chapterLink
+            ?.split('/v1/')[1];
+
+    for (var chapterLocal in listChaptersLocal) {
+      if (chapterLocal.href == checkHref) {
+        setState(() {
+          loadState = LoadState.loadSuccess;
+          chapterContent = ChapterContent(
+              title: chapterLocal.chapterTitle,
+              text: chapterLocal.chapterText,
+              href: chapterLocal.href);
+        });
+        foundMatchingChapter = true;
       }
     }
-    return false;
+
+    return foundMatchingChapter;
   }
 
   @override
@@ -266,19 +264,14 @@ class _ChapterScreenState extends State<ChapterScreen> {
                     .chapterLink
                     ?.split('/v1/')[1] ??
                 '';
-            final jsonChapterContent = jsonEncode(chapterContent.toJson());
-            listChapterContent.add(jsonChapterContent);
           });
 
-          List<String>? getLocalChapterData = [];
-          await SharedPrefManager.getLocalChapterData().then((value) {
-            getLocalChapterData = value;
-          });
+          final ChapterItem chapterItem = ChapterItem(
+              chapterTitle: chapterContent.title,
+              href: chapterContent.href,
+              chapterText: chapterContent.text);
 
-          listChapterContent.addAll(getLocalChapterData ?? []);
-
-          await SharedPrefManager.setLocalChapterData(
-              value: listChapterContent);
+          await _hiveService.addChapter(chapterItem);
           return;
         }
       },

@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:audiobook/model/chapter.dart';
-import 'package:audiobook/model/chapter_content.dart';
+import 'package:audiobook/src/data/service/local/hive_service.dart';
 import 'package:audiobook/src/shared/app_route.dart';
-import 'package:audiobook/src/shared/shared_preference/shared_preferences_manager.dart';
+import 'package:audiobook/src/shared/hive/setup_locator.dart';
 import 'package:audiobook/utils/size_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -28,6 +27,7 @@ class _ChapterListScreenState extends State<ChapterListScreen>
     with SingleTickerProviderStateMixin, RouteAware, WidgetsBindingObserver {
   late Size size;
   late TabController _tabController;
+  final HiveService _hiveService = locator<HiveService>();
 
   @override
   void initState() {
@@ -55,9 +55,7 @@ class _ChapterListScreenState extends State<ChapterListScreen>
 
   @override
   void didPopNext() {
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
@@ -177,21 +175,16 @@ class _ChapterListScreenState extends State<ChapterListScreen>
   }
 
   Future<bool> checkLocalChapterData(int chapterIndex) async {
-    final localData = await SharedPrefManager.getLocalChapterData();
-    if (localData != null) {
-      for (final jsonString in localData) {
-        try {
-          final jsonData = jsonDecode(jsonString);
-          final chapterContentData = ChapterContent.fromJson(jsonData);
-          if (chapterContentData.href ==
-              widget.chapterList?[chapterIndex].chapterLink?.split('/v1/')[1]) {
-            return true;
-          }
-        } catch (e) {
-          printInfo(info: 'Error decoding JSON: $e');
-        }
+    final listChaptersLocal = await _hiveService.getAllChapters();
+    bool foundMatchingChapter = false;
+
+    for (var chapterLocal in listChaptersLocal) {
+      if (chapterLocal.href ==
+          widget.chapterList?[chapterIndex].chapterLink?.split('/v1/')[1]) {
+        foundMatchingChapter = true;
       }
     }
-    return false;
+
+    return foundMatchingChapter;
   }
 }

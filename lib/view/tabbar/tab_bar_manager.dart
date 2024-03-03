@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/view/home_page/home_page.dart';
 import 'package:audiobook/view/library_novel/library_novel_page.dart';
@@ -63,7 +65,7 @@ class _TabBarManagerState extends State<TabBarManager> {
         ],
       ),
       bottomNavigationBar: SizedBox(
-        height: 90,
+        height: kBottomNavigationBarHeight + (Platform.isAndroid ? 0 : 20),
         child: BottomNavigationBar(
           selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
