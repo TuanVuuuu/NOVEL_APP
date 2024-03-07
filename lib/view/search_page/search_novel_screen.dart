@@ -1,5 +1,5 @@
 import 'package:audiobook/commponent/item_novel_widget.dart';
-import 'package:audiobook/commponent/vertical_item_novel_loading_shimmer.dart';
+import 'package:audiobook/commponent/loading_shimmer/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/utils/view_extensions.dart';

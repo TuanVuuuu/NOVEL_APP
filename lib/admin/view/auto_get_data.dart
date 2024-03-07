@@ -2,22 +2,12 @@ import 'package:audiobook/admin/cubit/auto_get_data_cubit.dart';
 import 'package:audiobook/model/api_log.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
-import 'package:audiobook/utils/log_extensions.dart';
 import 'package:audiobook/utils/view_extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
-// enum APIState {
-//   none,
-//   loadingListNovel,
-//   loadingListNovelSuccess,
-//   loadingNovelInfo,
-//   loadingNovelInfoSuccess,
-//   loadingChapterList,
-//   loadingChapterListSuccess
-// }
 
 class AutoGetData extends StatefulWidget {
   const AutoGetData({super.key});
@@ -148,7 +138,9 @@ class _AutoGetDataState extends State<AutoGetData> {
                 .removeAt(loadApiStateLog.length - 1); // Xoá phần tử cũ nhất
           }
 
-          print("indexNovelList: $indexNovelList");
+          if (kDebugMode) {
+            print("indexNovelList: $indexNovelList");
+          }
           if (indexNovelList == 19) {
             Get.find<AutoGetDataCubit>()
                 .getNovelInfo(novelTrendList[indexNovelList].href ?? '');
@@ -172,11 +164,12 @@ class _AutoGetDataState extends State<AutoGetData> {
             ));
           });
 
-          print("indexChapterList: $indexChapterList");
+          if (kDebugMode) {
+            print("indexChapterList: $indexChapterList");
+          }
 
           Get.find<AutoGetDataCubit>().getChapterContent(
-              href: state
-                      .response.chapterList?[indexChapterList].chapterLink
+              href: state.response.chapterList?[indexChapterList].chapterLink
                       ?.split('/v1/')[1] ??
                   '');
 
@@ -204,7 +197,9 @@ class _AutoGetDataState extends State<AutoGetData> {
             indexChapterList--;
           });
 
-          print("indexChapterList: $indexChapterList");
+          if (kDebugMode) {
+            print("indexChapterList: $indexChapterList");
+          }
 
           if (indexNovelList >= 0 && indexChapterList < 0) {
             Get.find<AutoGetDataCubit>()

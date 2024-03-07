@@ -17,10 +17,11 @@ class SpinKitHourGlass extends StatefulWidget {
   final AnimationController? controller;
 
   @override
-  _SpinKitHourGlassState createState() => _SpinKitHourGlassState();
+  State<SpinKitHourGlass> createState() => _SpinKitHourGlassState();
 }
 
-class _SpinKitHourGlassState extends State<SpinKitHourGlass> with SingleTickerProviderStateMixin {
+class _SpinKitHourGlassState extends State<SpinKitHourGlass>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -28,10 +29,13 @@ class _SpinKitHourGlassState extends State<SpinKitHourGlass> with SingleTickerPr
   void initState() {
     super.initState();
 
-    _controller = (widget.controller ?? AnimationController(vsync: this, duration: widget.duration))
+    _controller = (widget.controller ??
+        AnimationController(vsync: this, duration: widget.duration))
       ..addListener(() => setState(() {}))
       ..repeat();
-    _animation = Tween(begin: 0.0, end: 8.0).animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 1.0, curve: Curves.easeOut)));
+    _animation = Tween(begin: 0.0, end: 8.0).animate(CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 1.0, curve: Curves.easeOut)));
   }
 
   @override
@@ -47,8 +51,8 @@ class _SpinKitHourGlassState extends State<SpinKitHourGlass> with SingleTickerPr
         transform: Matrix4.identity()..rotateZ((_animation.value) * math.pi),
         alignment: FractionalOffset.center,
         child: CustomPaint(
-          child: SizedBox.fromSize(size: Size.square(widget.size)),
           painter: _HourGlassPainter(weight: 90.0, color: widget.color),
+          child: SizedBox.fromSize(size: Size.square(widget.size)),
         ),
       ),
     );

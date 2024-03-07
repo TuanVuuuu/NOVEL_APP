@@ -8,7 +8,9 @@ class SpinKitFoldingCube extends StatefulWidget {
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 2400),
     this.controller,
-  })  : assert(!(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
+  })  : assert(
+            !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
+                !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
         super(key: key);
 
@@ -19,10 +21,11 @@ class SpinKitFoldingCube extends StatefulWidget {
   final AnimationController? controller;
 
   @override
-  _SpinKitFoldingCubeState createState() => _SpinKitFoldingCubeState();
+  State<SpinKitFoldingCube> createState() => _SpinKitFoldingCubeState();
 }
 
-class _SpinKitFoldingCubeState extends State<SpinKitFoldingCube> with SingleTickerProviderStateMixin {
+class _SpinKitFoldingCubeState extends State<SpinKitFoldingCube>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _rotate1;
   late Animation<double> _rotate2;
@@ -33,17 +36,22 @@ class _SpinKitFoldingCubeState extends State<SpinKitFoldingCube> with SingleTick
   void initState() {
     super.initState();
 
-    _controller = (widget.controller ?? AnimationController(vsync: this, duration: widget.duration))
+    _controller = (widget.controller ??
+        AnimationController(vsync: this, duration: widget.duration))
       ..addListener(() => setState(() {}))
       ..repeat(reverse: true);
-    _rotate1 = Tween(begin: 0.0, end: 180.0)
-        .animate(CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.25, curve: Curves.easeIn)));
-    _rotate2 = Tween(begin: 0.0, end: 180.0)
-        .animate(CurvedAnimation(parent: _controller, curve: const Interval(0.25, 0.5, curve: Curves.easeIn)));
-    _rotate3 = Tween(begin: 0.0, end: 180.0)
-        .animate(CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.75, curve: Curves.easeIn)));
-    _rotate4 = Tween(begin: 0.0, end: 180.0)
-        .animate(CurvedAnimation(parent: _controller, curve: const Interval(0.75, 1.0, curve: Curves.easeIn)));
+    _rotate1 = Tween(begin: 0.0, end: 180.0).animate(CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.25, curve: Curves.easeIn)));
+    _rotate2 = Tween(begin: 0.0, end: 180.0).animate(CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.25, 0.5, curve: Curves.easeIn)));
+    _rotate3 = Tween(begin: 0.0, end: 180.0).animate(CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 0.75, curve: Curves.easeIn)));
+    _rotate4 = Tween(begin: 0.0, end: 180.0).animate(CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.75, 1.0, curve: Curves.easeIn)));
   }
 
   @override
@@ -75,24 +83,25 @@ class _SpinKitFoldingCubeState extends State<SpinKitFoldingCube> with SingleTick
   }
 
   Widget _cube(int i, {required Animation<double> animation}) {
-    final _size = widget.size * 0.5, _position = widget.size * .5;
+    final size = widget.size * 0.5, position = widget.size * .5;
 
-    final Matrix4 _tRotate = Matrix4.identity()..rotateY(animation.value * 0.0174533);
+    final Matrix4 tRotate = Matrix4.identity()
+      ..rotateY(animation.value * 0.0174533);
 
     return Positioned.fill(
-      top: _position,
-      left: _position,
+      top: position,
+      left: position,
       child: Transform(
         transform: Matrix4.rotationZ(90.0 * (i - 1) * 0.0174533),
         child: Align(
           alignment: Alignment.center,
           child: Transform(
-            transform: _tRotate,
+            transform: tRotate,
             alignment: Alignment.centerLeft,
             child: Opacity(
               opacity: 1.0 - (animation.value / 180.0),
               child: SizedBox.fromSize(
-                size: Size.square(_size),
+                size: Size.square(size),
                 child: _itemBuilder(i - 1),
               ),
             ),

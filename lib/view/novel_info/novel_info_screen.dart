@@ -1,11 +1,9 @@
-import 'dart:convert';
 import 'dart:ui';
-import 'package:audiobook/commponent/pharagraph_loading_shimmer.dart';
+import 'package:audiobook/commponent/loading_shimmer/pharagraph_loading_shimmer.dart';
 import 'package:audiobook/commponent/star_rating.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/model/novel_detail.dart';
-import 'package:audiobook/src/shared/shared_preference/shared_preferences_manager.dart';
 import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/chapter_list/chapter_list_screen.dart';
 import 'package:flutter/material.dart';

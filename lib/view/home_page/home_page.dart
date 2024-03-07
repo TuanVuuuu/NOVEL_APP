@@ -2,7 +2,7 @@ import 'package:another_carousel_pro/another_carousel_pro.dart';
 import 'package:audiobook/commponent/flutter_spinkit/src/circle.dart';
 import 'package:audiobook/commponent/item_novel_widget.dart';
 import 'package:audiobook/commponent/loading_shimmer/loading_horizional_item_novel.dart';
-import 'package:audiobook/commponent/vertical_item_novel_loading_shimmer.dart';
+import 'package:audiobook/commponent/loading_shimmer/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/utils/view_extensions.dart';

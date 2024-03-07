@@ -8,7 +8,9 @@ class SpinKitPulse extends StatefulWidget {
     this.itemBuilder,
     this.duration = const Duration(seconds: 1),
     this.controller,
-  })  : assert(!(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
+  })  : assert(
+            !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
+                !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
         super(key: key);
 
@@ -19,10 +21,11 @@ class SpinKitPulse extends StatefulWidget {
   final AnimationController? controller;
 
   @override
-  _SpinKitPulseState createState() => _SpinKitPulseState();
+  State<SpinKitPulse> createState() => _SpinKitPulseState();
 }
 
-class _SpinKitPulseState extends State<SpinKitPulse> with SingleTickerProviderStateMixin {
+class _SpinKitPulseState extends State<SpinKitPulse>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -30,7 +33,8 @@ class _SpinKitPulseState extends State<SpinKitPulse> with SingleTickerProviderSt
   void initState() {
     super.initState();
 
-    _controller = (widget.controller ?? AnimationController(vsync: this, duration: widget.duration))
+    _controller = (widget.controller ??
+        AnimationController(vsync: this, duration: widget.duration))
       ..addListener(() => setState(() {}))
       ..repeat();
     _animation = CurveTween(curve: Curves.easeInOut).animate(_controller);
@@ -60,5 +64,7 @@ class _SpinKitPulseState extends State<SpinKitPulse> with SingleTickerProviderSt
 
   Widget _itemBuilder(int index) => widget.itemBuilder != null
       ? widget.itemBuilder!(context, index)
-      : DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color));
+      : DecoratedBox(
+          decoration:
+              BoxDecoration(shape: BoxShape.circle, color: widget.color));
 }

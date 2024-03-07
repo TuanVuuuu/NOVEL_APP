@@ -8,7 +8,9 @@ class SpinKitWanderingCubes extends StatefulWidget {
     this.size = 50.0,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1800),
-  })  : assert(!(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
+  })  : assert(
+            !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
+                !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
         offset = size * 0.75,
         super(key: key);
@@ -21,10 +23,11 @@ class SpinKitWanderingCubes extends StatefulWidget {
   final Duration duration;
 
   @override
-  _SpinKitWanderingCubesState createState() => _SpinKitWanderingCubesState();
+  State<SpinKitWanderingCubes> createState() => _SpinKitWanderingCubesState();
 }
 
-class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes> with SingleTickerProviderStateMixin {
+class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale1;
   late Animation<double> _scale2;
@@ -44,23 +47,32 @@ class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes> with Sing
       ..addListener(() => setState(() {}))
       ..repeat();
 
-    final animation1 = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.25, curve: Curves.easeInOut));
+    final animation1 = CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.25, curve: Curves.easeInOut));
     _translate1 = Tween(begin: 0.0, end: widget.offset).animate(animation1);
     _scale1 = Tween(begin: 1.0, end: 0.5).animate(animation1);
 
-    final animation2 = CurvedAnimation(parent: _controller, curve: const Interval(0.25, 0.5, curve: Curves.easeInOut));
+    final animation2 = CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.25, 0.5, curve: Curves.easeInOut));
     _translate2 = Tween(begin: 0.0, end: widget.offset).animate(animation2);
     _scale2 = Tween(begin: 1.0, end: 2.0).animate(animation2);
 
-    final animation3 = CurvedAnimation(parent: _controller, curve: const Interval(0.5, 0.75, curve: Curves.easeInOut));
+    final animation3 = CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 0.75, curve: Curves.easeInOut));
     _translate3 = Tween(begin: 0.0, end: -widget.offset).animate(animation3);
     _scale3 = Tween(begin: 1.0, end: 0.5).animate(animation3);
 
-    final animation4 = CurvedAnimation(parent: _controller, curve: const Interval(0.75, 1.0, curve: Curves.easeInOut));
+    final animation4 = CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.75, 1.0, curve: Curves.easeInOut));
     _translate4 = Tween(begin: 0.0, end: -widget.offset).animate(animation4);
     _scale4 = Tween(begin: 1.0, end: 2.0).animate(animation4);
 
-    _rotate = Tween(begin: 0.0, end: 360.0).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
+    _rotate = Tween(begin: 0.0, end: 360.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
   }
 
   @override
@@ -85,15 +97,15 @@ class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes> with Sing
   }
 
   Widget _cube(int index, [bool offset = false]) {
-    Matrix4 _tTranslate;
+    Matrix4 tTranslate;
     if (offset == true) {
-      _tTranslate = Matrix4.identity()
+      tTranslate = Matrix4.identity()
         ..translate(_translate3.value, 0.0)
         ..translate(0.0, _translate2.value)
         ..translate(0.0, _translate4.value)
         ..translate(_translate1.value, 0.0);
     } else {
-      _tTranslate = Matrix4.identity()
+      tTranslate = Matrix4.identity()
         ..translate(0.0, _translate3.value)
         ..translate(-_translate2.value, 0.0)
         ..translate(-_translate4.value, 0.0)
@@ -104,7 +116,7 @@ class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes> with Sing
       top: 0.0,
       left: offset == true ? 0.0 : widget.offset,
       child: Transform(
-        transform: _tTranslate,
+        transform: tTranslate,
         child: Transform.rotate(
           angle: _rotate.value * 0.0174533,
           child: Transform(
@@ -125,5 +137,6 @@ class _SpinKitWanderingCubesState extends State<SpinKitWanderingCubes> with Sing
 
   Widget _itemBuilder(int index) => widget.itemBuilder != null
       ? widget.itemBuilder!(context, index)
-      : DecoratedBox(decoration: BoxDecoration(color: widget.color, shape: widget.shape));
+      : DecoratedBox(
+          decoration: BoxDecoration(color: widget.color, shape: widget.shape));
 }

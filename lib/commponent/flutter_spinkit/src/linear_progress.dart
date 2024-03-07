@@ -24,17 +24,20 @@ class SpinKitLinearProgress extends StatefulWidget {
   final AnimationController? controller;
 
   @override
-  _SpinKitLinearProgressState createState() => _SpinKitLinearProgressState();
+  State<SpinKitLinearProgress> createState() => _SpinKitLinearProgressState();
 }
 
-class _SpinKitLinearProgressState extends State<SpinKitLinearProgress> with SingleTickerProviderStateMixin {
+class _SpinKitLinearProgressState extends State<SpinKitLinearProgress>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = (widget.controller ?? AnimationController(vsync: this, duration: widget.duration))..repeat();
+    _controller = (widget.controller ??
+        AnimationController(vsync: this, duration: widget.duration))
+      ..repeat();
   }
 
   @override
@@ -48,7 +51,8 @@ class _SpinKitLinearProgressState extends State<SpinKitLinearProgress> with Sing
     return Stack(
       children: List.generate(10, (index) {
         return ScaleTransition(
-          scale: DelayTween(begin: 0.0, end: 1.0, delay: 0).animate(_controller),
+          scale:
+              DelayTween(begin: 0.0, end: 1.0, delay: 0).animate(_controller),
           child: const Divider(
             height: 1,
             thickness: 1,

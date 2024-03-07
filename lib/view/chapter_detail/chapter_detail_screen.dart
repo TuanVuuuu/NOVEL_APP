@@ -1,4 +1,4 @@
-import 'package:audiobook/commponent/pharagraph_loading_shimmer.dart';
+import 'package:audiobook/commponent/loading_shimmer/pharagraph_loading_shimmer.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/chapter_content.dart';
 import 'package:audiobook/model/hive/chapter_item.dart';

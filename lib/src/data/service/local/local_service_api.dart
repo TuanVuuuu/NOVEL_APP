@@ -61,7 +61,9 @@ class LocalServiceApi implements LocalServiceRepository {
   Future<ChapterContent> getChapterContent({required String href}) async {
     try {
       final url = Uri.parse("http://localhost:8000/v1/$href/");
-      print("url: $url");
+      if (kDebugMode) {
+        print("url: $url");
+      }
       apiLogger('getChapterContent', url.toString());
       final response = await http.get(url);
 
