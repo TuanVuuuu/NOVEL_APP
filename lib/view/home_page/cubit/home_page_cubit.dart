@@ -17,4 +17,14 @@ class HomePageCubit extends Cubit<HomePageState> {
       emit(GetListNovelFailure(error: exception));
     }
   }
+
+  Future getListTopNovel() async {
+    try {
+      emit(GetListNovelInProgress());
+      var response = await repo.getListTopNovel();
+      emit(GetListTopNovelSuccess(response: response));
+    } catch (exception) {
+      emit(GetListTopNovelFailure(error: exception));
+    }
+  }
 }

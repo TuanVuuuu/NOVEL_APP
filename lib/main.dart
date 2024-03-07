@@ -38,7 +38,7 @@ class AudioBooksApp extends StatelessWidget {
     setupServiceLocator();
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Aza Novel',
+      title: 'Audio Truyện',
       navigatorKey: AppRouteExt.navigatorKey,
       key: key,
       theme: CustomTheme.fromContext(context).appTheme,

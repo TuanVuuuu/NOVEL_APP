@@ -20,7 +20,7 @@ class _TabBarManagerState extends State<TabBarManager> {
   List<String> listIndexTitle = [
     'Khám phá',
     'Tủ sách',
-    'Hồ sơ',
+    // 'Hồ sơ',
     // 'Admin',
   ];
 
@@ -65,7 +65,7 @@ class _TabBarManagerState extends State<TabBarManager> {
         ],
       ),
       bottomNavigationBar: SizedBox(
-        height: kBottomNavigationBarHeight + (Platform.isAndroid ? 0 : 20),
+        height: kBottomNavigationBarHeight + (Platform.isAndroid ? 0 : 33),
         child: BottomNavigationBar(
           selectedItemColor: Colors.black,
           unselectedItemColor: Colors.grey,
@@ -84,10 +84,10 @@ class _TabBarManagerState extends State<TabBarManager> {
               icon: Icon(Icons.book),
               label: "Tủ sách",
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: "Profile",
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.account_circle),
+            //   label: "Profile",
+            // ),
             // BottomNavigationBarItem(
             //   icon: Icon(Icons.admin_panel_settings),
             //   label: "Admin",

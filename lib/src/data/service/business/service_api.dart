@@ -60,6 +60,31 @@ class ServiceApi implements ServiceRepository {
   }
 
   @override
+  Future<List<Novel>> getListTopNovel() async {
+    final url = Uri.parse(
+        "https://novel-api-mo19.onrender.com/v1/novel/de-cu/danh-sach/top/page-1");
+
+    try {
+      apiLogger('getListTopNovel', url.toString());
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonData = json.decode(response.body);
+        List<Novel> novels =
+            jsonData.map((json) => Novel.fromJson(json)).toList();
+        apiLoggerStateSuccess('getListTopNovel');
+        return novels;
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (error) {
+      if (kDebugMode) {
+        print('Error: $error');
+      }
+      rethrow;
+    }
+  }
+
+  @override
   Future<NovelDetail> getNovelInfo({required String href}) async {
     final url = Uri.parse("https://novel-api-mo19.onrender.com$href/");
 

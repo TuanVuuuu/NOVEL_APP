@@ -7,6 +7,8 @@ abstract class ServiceRepository {
 
   Future<List<Novel>> getListNovel();
 
+  Future<List<Novel>> getListTopNovel();
+
   Future<NovelDetail> getNovelInfo({required String href});
 
   Future<List<Novel>> searchNovelByTitle({String? title});

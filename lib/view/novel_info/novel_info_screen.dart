@@ -6,10 +6,8 @@ import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/model/novel_detail.dart';
 import 'package:audiobook/src/shared/shared_preference/shared_preferences_manager.dart';
-import 'package:audiobook/src/shared/shared_preference/shared_preferences_utils.dart';
 import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/chapter_list/chapter_list_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -534,73 +532,10 @@ class _NovelInfoScreenState extends State<NovelInfoScreen> {
             });
           }
 
-          List<String> listNovel = [];
-
-          final jsonNovelContent = jsonEncode(novelData.toJson());
-          final localData = await SharedPrefManager.getLocalNovelData();
-          bool shouldAddNovelToLocal = true;
-          if (localData != null) {
-            await checkLocalNovelData().then((value) {
-              // Duyệt qua tất cả các phần tử trong danh sách localData
-              for (final e in value) {
-                final Novel novel = e;
-                // Kiểm tra xem có phần tử nào trong danh sách localData thoả mãn điều kiện hay không
-                if (novel.href == novelData.href) {
-                  shouldAddNovelToLocal = false;
-                  printInfo(info: 'Novel đã được lưu vào local trước đó');
-                  break; // Thoát khỏi vòng lặp khi tìm thấy một phần tử thoả mãn
-                }
-              }
-            });
-          } else {
-            listNovel.add(jsonNovelContent);
-            printInfo(info: 'Data null : Novel sẽ được lưu vào local');
-          }
-
-          if (shouldAddNovelToLocal && localData != null) {
-            listNovel.add(jsonNovelContent);
-            printInfo(info: 'Data exists : Novel sẽ được lưu vào local');
-          }
-
-          await SharedPrefManager.getLocalNovelData()?.then((value) {
-            if (value != null) {
-              listNovel.addAll(value);
-            }
-          });
-
-          await SharedPrefManager.setLocalNovelData(value: listNovel);
+          Get.find<NovelInfoCubit>().saveNovelToLocalData(novelData: novelData);
         }
       },
       child: Container(),
     );
-  }
-
-  Future<List<Novel>> checkLocalNovelData() async {
-    final localData = await SharedPrefManager.getLocalNovelData();
-    List<Novel> listNovelDetailLocal = [];
-    if (localData != null) {
-      for (final jsonString in localData) {
-        try {
-          final jsonData = jsonDecode(jsonString);
-          final novelDetailContentData = NovelDetail.fromJson(jsonData);
-          final novelData = Novel(
-              title: novelDetailContentData.title,
-              image: novelDetailContentData.image,
-              description: novelDetailContentData.description,
-              author: novelDetailContentData.author,
-              chapters: novelDetailContentData.chapters,
-              genre: novelDetailContentData.genres?[0],
-              href: novelDetailContentData.href);
-          setState(() {
-            listNovelDetailLocal.add(novelData);
-          });
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error decoding JSON: $e');
-          }
-        }
-      }
-    }
-    return listNovelDetailLocal;
   }
 }
