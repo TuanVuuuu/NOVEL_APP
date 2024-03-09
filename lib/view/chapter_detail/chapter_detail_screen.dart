@@ -1,9 +1,11 @@
+import 'package:audiobook/commponent/appbar/app_bar_overflow.dart';
 import 'package:audiobook/commponent/loading_shimmer/pharagraph_loading_shimmer.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/chapter_content.dart';
 import 'package:audiobook/model/hive/chapter_item.dart';
 import 'package:audiobook/src/data/service/local/hive_service.dart';
 import 'package:audiobook/src/shared/hive/setup_locator.dart';
+import 'package:audiobook/utils/text_extensions.dart';
 import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/chapter_detail/cubit/chapter_detail_cubit.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +79,50 @@ class _ChapterScreenState extends State<ChapterScreen> {
         body: Scrollbar(
           child: CustomScrollView(
             slivers: [
-              _buildHeader(),
+              CustomSliverAppBar(
+                chapterIndexCurrent: chapterIndexCurrent ?? 0,
+                listChapter: widget.listChapterArg,
+                chapterContent: mergeChapterText(chapterContent.text ?? []),
+                onPreviousChapterPressed: (value) async {
+                  if (chapterIndexCurrent != null && chapterIndexCurrent! > 0) {
+                    setState(() {
+                      if (chapterIndexCurrent != null) {
+                        chapterIndexCurrent = chapterIndexCurrent! - 1;
+                      }
+                    });
+                    bool hasLocalChapterData = await checkLocalChapterData();
+                    if (!hasLocalChapterData) {
+                      Get.find<ChapterDetailCubit>().getChapterContent(
+                          href: widget
+                                  .listChapterArg[chapterIndexCurrent ??
+                                      widget.chapterIndex]
+                                  .chapterLink
+                                  ?.split('/v1/')[1] ??
+                              '');
+                    }
+                  }
+                },
+                onNextChapterPressed: (value) async {
+                  if (chapterIndexCurrent != null &&
+                      chapterIndexCurrent! < widget.listChapterArg.length - 1) {
+                    setState(() {
+                      if (chapterIndexCurrent != null) {
+                        chapterIndexCurrent = chapterIndexCurrent! + 1;
+                      }
+                    });
+                    bool hasLocalChapterData = await checkLocalChapterData();
+                    if (!hasLocalChapterData) {
+                      Get.find<ChapterDetailCubit>().getChapterContent(
+                          href: widget
+                                  .listChapterArg[chapterIndexCurrent ??
+                                      widget.chapterIndex]
+                                  .chapterLink
+                                  ?.split('/v1/')[1] ??
+                              '');
+                    }
+                  }
+                },
+              ),
               _buildTitle(),
               loadState == LoadState.loadSuccess
                   ? _buildContent()
@@ -107,110 +152,6 @@ class _ChapterScreenState extends State<ChapterScreen> {
           style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.w300),
         ),
       ),
-    );
-  }
-
-  SliverAppBar _buildHeader() {
-    return SliverAppBar(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.blue,
-      snap: true,
-      forceElevated: true,
-      floating: true,
-      actions: <Widget>[
-        IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
-      ],
-      expandedHeight: 80,
-      flexibleSpace: Padding(
-          padding: const EdgeInsets.only(top: kToolbarHeight + 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () async {
-                  if (chapterIndexCurrent != null && chapterIndexCurrent! > 0) {
-                    setState(() {
-                      if (chapterIndexCurrent != null) {
-                        chapterIndexCurrent = chapterIndexCurrent! - 1;
-                      }
-                    });
-                    bool hasLocalChapterData = await checkLocalChapterData();
-                    if (!hasLocalChapterData) {
-                      Get.find<ChapterDetailCubit>().getChapterContent(
-                          href: widget
-                                  .listChapterArg[chapterIndexCurrent ??
-                                      widget.chapterIndex]
-                                  .chapterLink
-                                  ?.split('/v1/')[1] ??
-                              '');
-                    }
-                  }
-                },
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Container(
-                    margin: const EdgeInsets.all(4),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: BoxDecoration(
-                        color: (chapterIndexCurrent != null &&
-                                chapterIndexCurrent! > 0)
-                            ? Colors.blue
-                            : Colors.grey,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Text(
-                      'Chương trước',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () async {
-                  if (chapterIndexCurrent != null &&
-                      chapterIndexCurrent! < widget.listChapterArg.length - 1) {
-                    setState(() {
-                      if (chapterIndexCurrent != null) {
-                        chapterIndexCurrent = chapterIndexCurrent! + 1;
-                      }
-                    });
-                    bool hasLocalChapterData = await checkLocalChapterData();
-                    if (!hasLocalChapterData) {
-                      Get.find<ChapterDetailCubit>().getChapterContent(
-                          href: widget
-                                  .listChapterArg[chapterIndexCurrent ??
-                                      widget.chapterIndex]
-                                  .chapterLink
-                                  ?.split('/v1/')[1] ??
-                              '');
-                    }
-                  }
-                },
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Container(
-                    margin: const EdgeInsets.all(4),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    decoration: BoxDecoration(
-                        color: (chapterIndexCurrent != null &&
-                                chapterIndexCurrent! !=
-                                    widget.listChapterArg.length - 1)
-                            ? Colors.blue
-                            : Colors.grey,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: const Text(
-                      'Chương sau',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )),
     );
   }
 

@@ -1,12 +1,19 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:audiobook/utils/size_extensions.dart';
+import 'package:audiobook/utils/text_extensions.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:get/get.dart';
 
 class TextToSpeechPage extends StatefulWidget {
-  const TextToSpeechPage({super.key});
+  final String? voiceTextInput;
+  const TextToSpeechPage({
+    super.key,
+    this.voiceTextInput = 'Xin chào',
+  });
 
   @override
   State<TextToSpeechPage> createState() => _TextToSpeechPageState();
@@ -23,7 +30,8 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
   double rate = 0.5;
   bool isCurrentLanguageInstalled = false;
 
-  String? _newVoiceText;
+  int end = 0;
+  int endSession = 0;
   int? _inputLength;
 
   TtsState ttsState = TtsState.stopped;
@@ -78,6 +86,7 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
         if (kDebugMode) {
           print("Complete");
         }
+        endSession = end;
         ttsState = TtsState.stopped;
       });
     });
@@ -117,6 +126,13 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
         ttsState = TtsState.stopped;
       });
     });
+
+    flutterTts.setProgressHandler(
+        (String text, int startOffset, int endOffset, String word) {
+      setState(() {
+        end = endSession + endOffset;
+      });
+    });
   }
 
   Future<dynamic> _getLanguages() async => await flutterTts.getLanguages;
@@ -145,10 +161,33 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     await flutterTts.setVolume(volume);
     await flutterTts.setSpeechRate(rate);
     await flutterTts.setPitch(pitch);
-
-    if (_newVoiceText != null) {
-      if (_newVoiceText!.isNotEmpty) {
-        await flutterTts.speak(_newVoiceText!);
+    setState(() {
+      if (isStopped) {
+        endSession = 0;
+        end = 0;
+      }
+    });
+    if (widget.voiceTextInput != null) {
+      if (widget.voiceTextInput!.isNotEmpty) {
+        String text = widget.voiceTextInput!;
+        // Kiểm tra chiều dài của đoạn văn
+        if (text.length > 3500) {
+          // Tách đoạn văn thành các phần nhỏ không vượt quá 3500 ký tự
+          List<String> chunks = splitTextIntoChunks(text);
+          setState(() {
+            ttsState = TtsState.playing;
+          });
+          // Đọc lần lượt các phần nhỏ
+          for (String chunk in chunks) {
+            if (ttsState != TtsState.stopped && ttsState != TtsState.paused) {
+              await flutterTts.awaitSpeakCompletion(true);
+              await flutterTts.speak(chunk);
+            }
+          }
+        } else {
+          // Nếu đoạn văn không vượt quá 3500 ký tự, đọc nguyên văn
+          await flutterTts.speak(text);
+        }
       }
     }
   }
@@ -172,6 +211,15 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     super.dispose();
     flutterTts.stop();
   }
+
+  Widget _progressBar(int end) => Container(
+      alignment: Alignment.topCenter,
+      padding: const EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+      child: LinearProgressIndicator(
+        backgroundColor: Colors.red,
+        valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+        value: end / widget.voiceTextInput!.length,
+      ));
 
   List<DropdownMenuItem<String>> getEnginesDropDownMenuItems(dynamic engines) {
     var items = <DropdownMenuItem<String>>[];
@@ -212,30 +260,33 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     });
   }
 
-  void _onChange(String text) {
-    setState(() {
-      _newVoiceText = text;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Flutter TTS'),
-        ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            children: [
-              _inputSection(),
-              _btnSection(),
-              _engineSection(),
-              _futureBuilder(),
-              _buildSliders(),
-              if (isAndroid) _getMaxSpeechInputLengthSection(),
-            ],
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: TapRegion(
+        onTapOutside: (event) async {
+          Get.back();
+          await _stop();
+        },
+        child: Center(
+          child: Container(
+            color: Colors.white,
+            width: sizeSystem(context).width * 0.8,
+            height: sizeSystem(context).width * 0.8,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  _progressBar(end),
+                  _btnSection(),
+                  _engineSection(),
+                  _futureBuilder(),
+                  _buildSliders(),
+                  if (isAndroid) _getMaxSpeechInputLengthSection(),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -271,17 +322,6 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
           return const Text('Loading Languages...');
         }
       });
-
-  Widget _inputSection() => Container(
-      alignment: Alignment.topCenter,
-      padding: const EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
-      child: TextField(
-        maxLines: 11,
-        minLines: 6,
-        onChanged: (String value) {
-          _onChange(value);
-        },
-      ));
 
   Widget _btnSection() {
     return Container(
