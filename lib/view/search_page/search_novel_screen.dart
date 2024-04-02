@@ -1,11 +1,9 @@
 import 'package:audiobook/commponent/item_novel_widget.dart';
 import 'package:audiobook/commponent/loading_shimmer/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/novel.dart';
-import 'package:audiobook/src/shared/app_route.dart';
-import 'package:audiobook/utils/view_extensions.dart';
+import 'package:audiobook/utils/enum_constants.dart';
 import 'package:audiobook/view/search_page/cubit/search_page_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -13,7 +11,12 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../commponent/flutter_spinkit/src/circle.dart';
 
 class SearchNovelScreen extends StatefulWidget {
-  const SearchNovelScreen({Key? key}) : super(key: key);
+  const SearchNovelScreen({
+    Key? key,
+    required this.onTapNovel,
+  }) : super(key: key);
+
+  final Function(Novel novel)? onTapNovel;
 
   @override
   State<SearchNovelScreen> createState() => _SearchNovelScreenState();
@@ -39,19 +42,6 @@ class _SearchNovelScreenState extends State<SearchNovelScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          systemNavigationBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.light,
-        ),
-        title: const Text('Tìm kiếm'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -196,8 +186,7 @@ class _SearchNovelScreenState extends State<SearchNovelScreen> {
             (context, index) {
               return GestureDetector(
                   onTap: () {
-                    Get.toNamed(AppRoute.novelinfo.name,
-                        arguments: [searchResult[index]]);
+                    widget.onTapNovel?.call(searchResult[index]);
                   },
                   child: loadState == LoadState.loading
                       ? const VerticalItemNovelLoadingShimmer()

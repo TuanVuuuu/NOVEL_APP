@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:audiobook/utils/size_extensions.dart';
 import 'package:audiobook/utils/text_extensions.dart';
+import 'package:audiobook/utils/enum_constants.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 
 import 'package:flutter/material.dart';
@@ -18,8 +19,6 @@ class TextToSpeechPage extends StatefulWidget {
   @override
   State<TextToSpeechPage> createState() => _TextToSpeechPageState();
 }
-
-enum TtsState { playing, stopped, paused, continued }
 
 class _TextToSpeechPageState extends State<TextToSpeechPage> {
   late FlutterTts flutterTts;

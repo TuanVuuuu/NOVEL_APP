@@ -5,8 +5,8 @@ import 'package:audiobook/model/chapter_content.dart';
 import 'package:audiobook/model/hive/chapter_item.dart';
 import 'package:audiobook/src/data/service/local/hive_service.dart';
 import 'package:audiobook/src/shared/hive/setup_locator.dart';
+import 'package:audiobook/utils/enum_constants.dart';
 import 'package:audiobook/utils/text_extensions.dart';
-import 'package:audiobook/utils/view_extensions.dart';
 import 'package:audiobook/view/chapter_detail/cubit/chapter_detail_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -79,50 +79,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
         body: Scrollbar(
           child: CustomScrollView(
             slivers: [
-              CustomSliverAppBar(
-                chapterIndexCurrent: chapterIndexCurrent ?? 0,
-                listChapter: widget.listChapterArg,
-                chapterContent: mergeChapterText(chapterContent.text ?? []),
-                onPreviousChapterPressed: (value) async {
-                  if (chapterIndexCurrent != null && chapterIndexCurrent! > 0) {
-                    setState(() {
-                      if (chapterIndexCurrent != null) {
-                        chapterIndexCurrent = chapterIndexCurrent! - 1;
-                      }
-                    });
-                    bool hasLocalChapterData = await checkLocalChapterData();
-                    if (!hasLocalChapterData) {
-                      Get.find<ChapterDetailCubit>().getChapterContent(
-                          href: widget
-                                  .listChapterArg[chapterIndexCurrent ??
-                                      widget.chapterIndex]
-                                  .chapterLink
-                                  ?.split('/v1/')[1] ??
-                              '');
-                    }
-                  }
-                },
-                onNextChapterPressed: (value) async {
-                  if (chapterIndexCurrent != null &&
-                      chapterIndexCurrent! < widget.listChapterArg.length - 1) {
-                    setState(() {
-                      if (chapterIndexCurrent != null) {
-                        chapterIndexCurrent = chapterIndexCurrent! + 1;
-                      }
-                    });
-                    bool hasLocalChapterData = await checkLocalChapterData();
-                    if (!hasLocalChapterData) {
-                      Get.find<ChapterDetailCubit>().getChapterContent(
-                          href: widget
-                                  .listChapterArg[chapterIndexCurrent ??
-                                      widget.chapterIndex]
-                                  .chapterLink
-                                  ?.split('/v1/')[1] ??
-                              '');
-                    }
-                  }
-                },
-              ),
+              _buildHeader(),
               _buildTitle(),
               loadState == LoadState.loadSuccess
                   ? _buildContent()
@@ -138,6 +95,53 @@ class _ChapterScreenState extends State<ChapterScreen> {
             ],
           ),
         ));
+  }
+
+  CustomSliverAppBar _buildHeader() {
+    return CustomSliverAppBar(
+      chapterIndexCurrent: chapterIndexCurrent ?? 0,
+      listChapter: widget.listChapterArg,
+      chapterContent: mergeChapterText(chapterContent.text ?? []),
+      onPreviousChapterPressed: (value) async {
+        if (chapterIndexCurrent != null && chapterIndexCurrent! > 0) {
+          setState(() {
+            if (chapterIndexCurrent != null) {
+              chapterIndexCurrent = chapterIndexCurrent! - 1;
+            }
+          });
+          bool hasLocalChapterData = await checkLocalChapterData();
+          if (!hasLocalChapterData) {
+            Get.find<ChapterDetailCubit>().getChapterContent(
+                href: widget
+                        .listChapterArg[
+                            chapterIndexCurrent ?? widget.chapterIndex]
+                        .chapterLink
+                        ?.split('/v1/')[1] ??
+                    '');
+          }
+        }
+      },
+      onNextChapterPressed: (value) async {
+        if (chapterIndexCurrent != null &&
+            chapterIndexCurrent! < widget.listChapterArg.length - 1) {
+          setState(() {
+            if (chapterIndexCurrent != null) {
+              chapterIndexCurrent = chapterIndexCurrent! + 1;
+            }
+          });
+          bool hasLocalChapterData = await checkLocalChapterData();
+          if (!hasLocalChapterData) {
+            Get.find<ChapterDetailCubit>().getChapterContent(
+                href: widget
+                        .listChapterArg[
+                            chapterIndexCurrent ?? widget.chapterIndex]
+                        .chapterLink
+                        ?.split('/v1/')[1] ??
+                    '');
+          }
+        }
+      },
+    );
   }
 
   SliverToBoxAdapter _buildTitle() {

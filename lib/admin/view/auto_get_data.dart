@@ -2,7 +2,7 @@ import 'package:audiobook/admin/cubit/auto_get_data_cubit.dart';
 import 'package:audiobook/model/api_log.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
-import 'package:audiobook/utils/view_extensions.dart';
+import 'package:audiobook/utils/enum_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -4,8 +4,8 @@ import 'package:audiobook/commponent/star_rating.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/model/novel_detail.dart';
-import 'package:audiobook/utils/view_extensions.dart';
-import 'package:audiobook/view/chapter_list/chapter_list_screen.dart';
+import 'package:audiobook/utils/enum_constants.dart';
+import 'package:audiobook/utils/size_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +14,22 @@ import 'package:get/get.dart';
 import 'cubit/novel_info_cubit.dart';
 
 class NovelInfoScreen extends StatefulWidget {
-  const NovelInfoScreen({super.key, required this.novelData});
+  const NovelInfoScreen({
+    super.key,
+    required this.novelData,
+    this.onTapBack,
+    this.onTapListChapter,
+    this.novelDataResponse,
+    this.oldNovelData,
+    this.onHandle,
+  });
 
   final Novel novelData;
+  final Function()? onTapBack;
+  final Function(List<Chapter>? chapterList)? onTapListChapter;
+  final Function(NovelDetail? novelData)? novelDataResponse;
+  final NovelDetail? oldNovelData;
+  final Function(NovelHandle? novelHandle)? onHandle;
 
   @override
   State<NovelInfoScreen> createState() => _NovelInfoScreenState();
@@ -25,7 +38,6 @@ class NovelInfoScreen extends StatefulWidget {
 class _NovelInfoScreenState extends State<NovelInfoScreen> {
   late List<NovelDetail> novelDataList = [];
   late NovelDetail novelData = NovelDetail();
-  late Size size;
   bool showDescription = false;
   bool showChapterList = false;
   LoadState loadState = LoadState.none;
@@ -35,307 +47,437 @@ class _NovelInfoScreenState extends State<NovelInfoScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.find<NovelInfoCubit>().getNovelInfo(
-          href: widget.novelData.href?.replaceAll('truyen', 'novel') ?? '');
+      if (widget.novelData.title == widget.oldNovelData?.title) {
+        setState(() {
+          loadState = LoadState.loadSuccess;
+        });
+        novelData = widget.oldNovelData ?? NovelDetail();
+      } else {
+        setState(() {
+          loadState = LoadState.none;
+        });
+        Get.find<NovelInfoCubit>().getNovelInfo(
+            href: widget.novelData.href
+                    ?.replaceAll('/v1/truyen/', '/v1/novel/') ??
+                '');
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size;
+    return _buildBody(context);
+  }
+
+  Scaffold _buildBody(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          ConstrainedBox(
-              constraints: const BoxConstraints.expand(),
-              child: Image.network(
-                widget.novelData.image ?? '',
-                fit: BoxFit.cover,
-              )),
-          ConstrainedBox(
-              constraints: const BoxConstraints.expand(),
-              child: Container(
-                height: size.height,
-                width: size.width,
-                color: Colors.black.withOpacity(0.6),
-              )),
-          Center(
-            child: ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                child: Container(
-                  width: size.width,
-                  height: size.height,
-                  decoration: BoxDecoration(
-                      color: Colors.grey.shade200.withOpacity(0.4)),
-                ),
-              ),
-            ),
-          ),
-          Scrollbar(
-              child: CustomScrollView(
-            physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics()),
-            slivers: [
-              const SliverAppBar(
-                systemOverlayStyle: SystemUiOverlayStyle(
-                    statusBarColor: Colors.transparent,
-                    statusBarBrightness: Brightness.light,
-                    statusBarIconBrightness: Brightness.light),
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.blue,
-                elevation: 0,
-                floating: true,
-                pinned: false,
-                snap: true,
-                toolbarHeight: 50, // Đặt độ cao mong muốn cho thanh AppBar
-              ),
-              _buildImageBanner(context),
-              _buildViewAndRatingStar(),
-              SliverToBoxAdapter(
-                child: _buildDescription(),
-              ),
-              SliverToBoxAdapter(
-                  child:
-                      _buildChapterList(chapterList: novelData.chapterLatest)),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 80),
-              ),
-              SliverToBoxAdapter(
-                child: _buildListener(),
-              )
-            ],
-          )),
+          _buildImageBackgound(),
+          _buildBlurBackgound(),
+          _buildImageBlur(),
+          _buildContents(context),
         ],
       ),
     );
   }
 
-  Widget _buildChapterList({String? title, List<Chapter>? chapterList}) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black87,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Scrollbar _buildContents(BuildContext context) {
+    return Scrollbar(
+        child: CustomScrollView(
+      primary: true,
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        _buildHeader(),
+        _buildImageBanner(context),
+        _buildHandleButton(),
+        _buildViewAndRatingStar(),
+        _buildDescription(),
+        _buildChapterList(chapterList: novelData.chapterLatest),
+        const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        SliverToBoxAdapter(child: _buildListener())
+      ],
+    ));
+  }
+
+  SliverToBoxAdapter _buildHandleButton() {
+    return SliverToBoxAdapter(
+      child: Row(
         children: [
-          Row(
-            children: [
-              if (title != null)
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      showChapterList = false;
-                    });
-                  },
-                  child: const Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.blue,
-                    size: 20,
-                  ),
+          InkWell(
+            onTap: () {
+              if (loadState != LoadState.loading) {
+                widget.onTapListChapter?.call(novelData.chapterList);
+                widget.onHandle?.call(NovelHandle.audio);
+              }
+            },
+            child: Container(
+              width: sizeSystem(context).width * 0.25,
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.only(left: 8),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  color: Colors.black,
+                  border: Border.all(width: 3, color: Colors.blue)),
+              child: const Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Icon(
+                      Icons.headphones,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      'Audio',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-              Text(
-                title ?? 'Chương mới',
-                style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.left,
               ),
-            ],
+            ),
           ),
-          const SizedBox(
-            height: 16,
+          Container(
+            width: sizeSystem(context).width * 0.25,
+            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.only(left: 8),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                color: Colors.black,
+                border: Border.all(width: 3, color: Colors.blue)),
+            child: const Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    'Đọc từ đầu',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
           ),
-          if (loadState == LoadState.loading)
-            const PharagraphLoadingShimmer(itemCount: 1),
-          if (chapterList != null)
-            ...chapterList
-                .map((e) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                (e.chapterTitle ?? '')
-                                    .replaceAll(e.chapterTime ?? '', ''),
-                                maxLines: 3,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(
-                            e.chapterTime ?? '',
-                            style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic),
-                          ),
-                        )
-                      ],
-                    ))
-                .toList()
-                .reversed,
+          Container(
+            width: sizeSystem(context).width * 0.25,
+            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.only(left: 8),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                color: Colors.black,
+                border: Border.all(width: 3, color: Colors.blue)),
+            child: const Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text(
+                    'Đọc tiếp',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Center _buildImageBlur() {
+    return Center(
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          child: Container(
+            width: sizeSystem(context).width,
+            height: sizeSystem(context).height,
+            decoration:
+                BoxDecoration(color: Colors.grey.shade200.withOpacity(0.4)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  ConstrainedBox _buildBlurBackgound() {
+    return ConstrainedBox(
+        constraints: const BoxConstraints.expand(),
+        child: Container(
+          height: sizeSystem(context).height,
+          width: sizeSystem(context).width,
+          color: Colors.black.withOpacity(0.6),
+        ));
+  }
+
+  ConstrainedBox _buildImageBackgound() {
+    return ConstrainedBox(
+        constraints: const BoxConstraints.expand(),
+        child: Image.network(
+          widget.novelData.image ?? '',
+          fit: BoxFit.cover,
+        ));
+  }
+
+  SliverAppBar _buildHeader() {
+    return SliverAppBar(
+      systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarBrightness: Brightness.light,
+          statusBarIconBrightness: Brightness.light),
+      backgroundColor: Colors.transparent,
+      foregroundColor: Colors.blue,
+      leading: InkWell(
+        onTap: () {
+          widget.onTapBack?.call();
+        },
+        child: const Icon(
+          Icons.arrow_back_ios,
+          color: Colors.blue,
+        ),
+      ),
+
+      elevation: 0,
+      floating: true,
+      pinned: false,
+      snap: true,
+      toolbarHeight: 50, // Đặt độ cao mong muốn cho thanh AppBar
+    );
+  }
+
+  SliverToBoxAdapter _buildChapterList(
+      {String? title, List<Chapter>? chapterList}) {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (title != null)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        showChapterList = false;
+                      });
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                  ),
+                Text(
+                  title ?? 'Chương mới',
+                  style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.left,
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            if (loadState == LoadState.loading)
+              const PharagraphLoadingShimmer(itemCount: 1),
+            if (chapterList != null)
+              ...chapterList
+                  .map((e) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  (e.chapterTitle ?? '')
+                                      .replaceAll(e.chapterTime ?? '', ''),
+                                  maxLines: 3,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              e.chapterTime ?? '',
+                              style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic),
+                            ),
+                          )
+                        ],
+                      ))
+                  .toList()
+                  .reversed,
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDescription() {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.black87,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          AnimatedCrossFade(
-            duration: const Duration(milliseconds: 300), // Thời gian animation
-            firstChild: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                loadState == LoadState.loading
-                    ? Text(
-                        widget.novelData.description != null
-                            ? widget.novelData.description![0]
-                            : '',
-                        style: const TextStyle(color: Colors.white),
-                        textAlign: TextAlign.justify,
-                      )
-                    : Text(
-                        novelData.description != null
-                            ? novelData.description![0]
-                            : '',
-                        style: const TextStyle(color: Colors.white),
-                        textAlign: TextAlign.justify,
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            AnimatedCrossFade(
+              duration:
+                  const Duration(milliseconds: 300), // Thời gian animation
+              firstChild: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  loadState == LoadState.loading
+                      ? Text(
+                          widget.novelData.description != null
+                              ? widget.novelData.description![0]
+                              : '',
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.justify,
+                        )
+                      : Text(
+                          novelData.description != null
+                              ? novelData.description![0]
+                              : '',
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.justify,
+                        ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          showDescription = !showDescription;
+                        });
+                      },
+                      child: const Text(
+                        'Xem thêm',
+                        style: TextStyle(color: Colors.grey, fontSize: 13),
                       ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      setState(() {
-                        showDescription = !showDescription;
-                      });
-                    },
-                    child: const Text(
-                      'Xem thêm',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              secondChild: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (novelData.description != null)
+                      ...novelData.description!.map((e) {
+                        return Text(
+                          e,
+                          style: const TextStyle(color: Colors.white),
+                          textAlign: TextAlign.justify,
+                        );
+                      }).toList(),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            showDescription = !showDescription;
+                          });
+                        },
+                        child: const Text(
+                          'Ẩn bớt',
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ]),
+              crossFadeState: showDescription
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
             ),
-            secondChild:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (novelData.description != null)
-                ...novelData.description!.map((e) {
-                  return Text(
-                    e,
-                    style: const TextStyle(color: Colors.white),
-                    textAlign: TextAlign.justify,
+            Wrap(
+              children: [
+                ...(novelData.genres ?? []).map((e) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0, vertical: 4),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Text(
+                        e,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ),
                   );
                 }).toList(),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      showDescription = !showDescription;
-                    });
-                  },
-                  child: const Text(
-                    'Ẩn bớt',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                ),
-              ),
-            ]),
-            crossFadeState: showDescription
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-          ),
-          Wrap(
-            children: [
-              ...(novelData.genres ?? []).map((e) {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: Text(
-                      e,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 8),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Danh sách chương',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.normal,
-                        fontSize: 16),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (loadState != LoadState.loading) {
-                      Get.to(() => ChapterListScreen(
-                          chapterList: novelData.chapterList,
-                          chapterImage: widget.novelData.image));
-                    }
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        loadState == LoadState.loading
-                            ? 'Loading...'
-                            : '${novelData.chapterList?.length} chương',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.normal,
-                            fontSize: 16),
-                      ),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_outlined,
-                        color: Colors.blue,
-                        size: 20,
-                      )
-                    ],
-                  ),
-                )
               ],
             ),
-          )
-        ],
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Danh sách chương',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.normal,
+                          fontSize: 16),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      if (loadState != LoadState.loading) {
+                        widget.onTapListChapter?.call(novelData.chapterList);
+                        widget.onHandle?.call(NovelHandle.read);
+                      }
+                    },
+                    child: Row(
+                      children: [
+                        Text(
+                          loadState == LoadState.loading
+                              ? 'Loading...'
+                              : '${novelData.chapterList?.length} chương',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 16),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_outlined,
+                          color: Colors.blue,
+                          size: 20,
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -522,6 +664,8 @@ class _NovelInfoScreenState extends State<NovelInfoScreen> {
             novelData.image = widget.novelData.image;
             novelData.href =
                 widget.novelData.href?.replaceAll('truyen', 'novel') ?? '';
+
+            widget.novelDataResponse?.call(novelData);
           });
           if (novelData.chapterList?.length.toString() !=
               widget.novelData.chapters?.replaceAll(' chương', '')) {

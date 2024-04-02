@@ -17,4 +17,5 @@ class ChapterDetailCubit extends Cubit<ChapterDetailState> {
       emit(GetChapterContentFailure(error: exception));
     }
   }
+  
 }

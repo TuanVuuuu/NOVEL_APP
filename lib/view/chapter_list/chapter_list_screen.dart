@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:audiobook/model/chapter.dart';
+import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/src/data/service/local/hive_service.dart';
 import 'package:audiobook/src/shared/app_route.dart';
 import 'package:audiobook/src/shared/hive/setup_locator.dart';
+import 'package:audiobook/utils/enum_constants.dart';
 import 'package:audiobook/utils/size_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,14 +12,24 @@ import 'package:get/get.dart';
 import '../../main.dart';
 
 class ChapterListScreen extends StatefulWidget {
-  final List<Chapter>? chapterList;
-  final String? chapterImage;
-
   const ChapterListScreen({
     Key? key,
     this.chapterList,
-    this.chapterImage,
+    this.onTapBack,
+    this.onTapHandle,
+    this.handle,
+    required this.novelData,
   }) : super(key: key);
+
+  final List<Chapter>? chapterList;
+  final Function()? onTapBack;
+  final Function(
+    Chapter chapter,
+    List<Chapter>? chapterList,
+    int? index,
+  )? onTapHandle;
+  final NovelHandle? handle;
+  final Novel? novelData;
 
   @override
   State<ChapterListScreen> createState() => _ChapterListScreenState();
@@ -67,7 +79,17 @@ class _ChapterListScreenState extends State<ChapterListScreen>
         foregroundColor: Colors.blue,
         elevation: 0,
         title: const Text('Danh sách chương'),
+        leading: InkWell(
+          onTap: () {
+            widget.onTapBack?.call();
+          },
+          child: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.blue,
+          ),
+        ),
         bottom: TabBar(
+          tabAlignment: TabAlignment.start,
           labelColor: Colors.blue,
           unselectedLabelColor: Colors.grey,
           controller: _tabController,
@@ -110,7 +132,7 @@ class _ChapterListScreenState extends State<ChapterListScreen>
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // return a loading indicator while waiting for the future to complete
-              return const CircularProgressIndicator();
+              return const SizedBox();
             } else {
               if (snapshot.hasError) {
                 // return an error message if the future throws an error
@@ -130,10 +152,14 @@ class _ChapterListScreenState extends State<ChapterListScreen>
   GestureDetector _buildItemChapter(Chapter chapter, Color color) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(
-          AppRoute.chapterdetail.name,
-          arguments: [chapter, widget.chapterList, chapter.index],
-        );
+        if (widget.handle == NovelHandle.read) {
+          Get.toNamed(
+            AppRoute.chapterdetail.name,
+            arguments: [chapter, widget.chapterList, chapter.index],
+          );
+        } else {
+          widget.onTapHandle?.call(chapter, widget.chapterList, chapter.index);
+        }
       },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
