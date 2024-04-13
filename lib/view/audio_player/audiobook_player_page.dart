@@ -8,7 +8,6 @@ import 'package:audiobook/model/hive/chapter_item.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/src/data/service/local/hive_service.dart';
 import 'package:audiobook/src/shared/hive/setup_locator.dart';
-import 'package:audiobook/utils/log_extensions.dart';
 import 'package:audiobook/utils/size_extensions.dart';
 import 'package:audiobook/utils/text_extensions.dart';
 import 'package:audiobook/utils/time_extensions.dart';
@@ -86,6 +85,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
   final HiveService _hiveService = locator<HiveService>();
   String? nameNovel = '';
   String? chapterNameNovel = '';
+  String currentWord = '';
 
   @override
   initState() {
@@ -207,13 +207,6 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
         ttsState = TtsState.stopped;
       });
     });
-
-    flutterTts.setProgressHandler(
-        (String text, int startOffset, int endOffset, String word) {
-      setState(() {
-        end = endSession + endOffset;
-      });
-    });
   }
 
   Future<dynamic> _getLanguages() async => await flutterTts.getLanguages;
@@ -299,8 +292,17 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
   @override
   Widget build(BuildContext context) {
     final bool isMiniPlayerMode = audioStyle == AudioStyle.miniplayer;
-    apiLogger("isplaying", isPlaying);
-    apiLogger("isstop", isStopped);
+
+    flutterTts.setProgressHandler(
+        (String text, int startOffset, int endOffset, String word) {
+      if (word != "") {
+        setState(() {
+          currentWord = word;
+          end = endSession + endOffset;
+        });
+      }
+    });
+
     return widget.audioStyle == AudioStyle.player
         ? Scaffold(body: _buildPlayer(context))
         : isMiniPlayerMode
@@ -331,108 +333,17 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
             const SizedBox(height: 16),
             _buildChapterTitle(),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
-              child: LinearProgressIndicator(
-                value: end / voiceTextInput!.length,
-                backgroundColor: Colors.grey,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    formatTime(currentReadingTime),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    formatTime(totalReadingTime),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.bookmark_border,
-                    color: Colors.white,
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    if (chapterIndexCurrent > 0) {
-                      setState(() {
-                        chapterIndexCurrent = chapterIndexCurrent - 1;
-                      });
-                      bool hasLocalChapterData = await checkLocalChapterData();
-                      if (!hasLocalChapterData) {
-                        Get.find<ChapterDetailCubit>().getChapterContent(
-                            href: widget.listChapterArg[chapterIndexCurrent]
-                                    .chapterLink
-                                    ?.split('/v1/')[1] ??
-                                '');
-                      }
-                    }
-                  },
-                  icon: Icon(
-                    Icons.skip_previous,
-                    color: chapterIndexCurrent > 0 ? Colors.white : Colors.grey,
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    if (isPlaying) {
-                      _pause();
-                    } else {
-                      _speak();
-                    }
-                  },
-                  child: CircleAvatar(
-                    radius: 32,
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    child: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    if (chapterIndexCurrent <
-                        widget.listChapterArg.length - 1) {
-                      setState(() {
-                        chapterIndexCurrent = chapterIndexCurrent + 1;
-                      });
-                      bool hasLocalChapterData = await checkLocalChapterData();
-                      if (!hasLocalChapterData) {
-                        Get.find<ChapterDetailCubit>().getChapterContent(
-                            href: widget.listChapterArg[chapterIndexCurrent]
-                                    .chapterLink
-                                    ?.split('/v1/')[1] ??
-                                '');
-                      }
-                    }
-                  },
-                  icon: Icon(
-                    Icons.skip_next,
-                    color:
-                        chapterIndexCurrent < widget.listChapterArg.length - 1
-                            ? Colors.white
-                            : Colors.grey,
-                  ),
-                ),
-                const SizedBox(
-                  height: 48,
-                  width: 48,
-                ),
-              ],
-            ),
+            voiceTextInput != null && voiceTextInput != ""
+                ? Text(
+                    getCurrentPhrase(
+                        voiceTextInput ?? "", currentWord, 50, end),
+                    style: const TextStyle(color: Colors.grey),
+                  )
+                : const SizedBox(),
+            const SizedBox(height: 16),
+            _buildProgressBar(),
+            _buildTimerProgressBar(currentReadingTime, totalReadingTime),
+            _buildControllerPlayer(),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -466,6 +377,114 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
           ],
         ),
       ],
+    );
+  }
+
+  Row _buildControllerPlayer() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(
+            Icons.bookmark_border,
+            color: Colors.white,
+          ),
+        ),
+        IconButton(
+          onPressed: () async {
+            if (chapterIndexCurrent > 0) {
+              setState(() {
+                chapterIndexCurrent = chapterIndexCurrent - 1;
+              });
+              bool hasLocalChapterData = await checkLocalChapterData();
+              if (!hasLocalChapterData) {
+                Get.find<ChapterDetailCubit>().getChapterContent(
+                    href: widget.listChapterArg[chapterIndexCurrent].chapterLink
+                            ?.split('/v1/')[1] ??
+                        '');
+              }
+            }
+          },
+          icon: Icon(
+            Icons.skip_previous,
+            color: chapterIndexCurrent > 0 ? Colors.white : Colors.grey,
+          ),
+        ),
+        InkWell(
+          onTap: () {
+            if (isPlaying) {
+              _pause();
+            } else {
+              _speak();
+            }
+          },
+          child: CircleAvatar(
+            radius: 32,
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            child: Icon(
+              isPlaying ? Icons.pause : Icons.play_arrow,
+            ),
+          ),
+        ),
+        IconButton(
+          onPressed: () async {
+            if (chapterIndexCurrent < widget.listChapterArg.length - 1) {
+              setState(() {
+                chapterIndexCurrent = chapterIndexCurrent + 1;
+              });
+              bool hasLocalChapterData = await checkLocalChapterData();
+              if (!hasLocalChapterData) {
+                Get.find<ChapterDetailCubit>().getChapterContent(
+                    href: widget.listChapterArg[chapterIndexCurrent].chapterLink
+                            ?.split('/v1/')[1] ??
+                        '');
+              }
+            }
+          },
+          icon: Icon(
+            Icons.skip_next,
+            color: chapterIndexCurrent < widget.listChapterArg.length - 1
+                ? Colors.white
+                : Colors.grey,
+          ),
+        ),
+        const SizedBox(
+          height: 48,
+          width: 48,
+        ),
+      ],
+    );
+  }
+
+  Padding _buildTimerProgressBar(
+      double currentReadingTime, double totalReadingTime) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            formatTime(currentReadingTime),
+            style: const TextStyle(color: Colors.white),
+          ),
+          Text(
+            formatTime(totalReadingTime),
+            style: const TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Padding _buildProgressBar() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
+      child: LinearProgressIndicator(
+        value: end / voiceTextInput!.length,
+        backgroundColor: Colors.grey,
+      ),
     );
   }
 
@@ -736,11 +755,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
                     const SizedBox(width: 10),
                     InkWell(
                       onTap: () async {
-                        for (int i = 0; i <= numberSpeak; i++) {
-                          await Future.delayed(
-                              const Duration(milliseconds: 100));
-                          _stop();
-                        }
+                        multiStop();
                         widget.onDispose?.call();
                       },
                       child: const Icon(
@@ -829,5 +844,12 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
       },
       child: Container(),
     );
+  }
+
+  Future<void> multiStop() async {
+    for (int i = 0; i <= numberSpeak; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      _stop();
+    }
   }
 }

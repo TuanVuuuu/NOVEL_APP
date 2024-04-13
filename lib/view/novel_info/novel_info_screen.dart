@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:audiobook/commponent/loading_shimmer/pharagraph_loading_shimmer.dart';
-import 'package:audiobook/commponent/star_rating.dart';
+import 'package:audiobook/commponent/rating/star_rating.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/model/novel_detail.dart';

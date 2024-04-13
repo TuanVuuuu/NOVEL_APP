@@ -1,5 +1,5 @@
 import 'package:audiobook/commponent/flutter_spinkit/src/circle.dart';
-import 'package:audiobook/commponent/item_novel_widget.dart';
+import 'package:audiobook/view/widget/item_novel_widget.dart';
 import 'package:audiobook/commponent/loading_shimmer/loading_horizional_item_novel.dart';
 import 'package:audiobook/commponent/loading_shimmer/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/chapter.dart';

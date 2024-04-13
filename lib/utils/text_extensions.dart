@@ -31,3 +31,30 @@ List<String> splitTextIntoChunks(String text) {
   }
   return chunks;
 }
+
+String getCurrentPhrase(
+    String text, String currentWord, int phraseLength, int currentIndex) {
+  if (currentIndex >= 0 && currentIndex < text.length) {
+    int halfPhraseLength = phraseLength ~/ 2;
+    int startIndex = currentIndex - halfPhraseLength;
+    int endIndex = currentIndex + halfPhraseLength;
+
+    // Đảm bảo vị trí bắt đầu và kết thúc không vượt quá biên của văn bản
+    if (startIndex < 0) {
+      endIndex +=
+          (0 - startIndex); // Điều chỉnh vị trí kết thúc nếu startIndex âm
+      startIndex = 0;
+    }
+    if (endIndex >= text.length) {
+      startIndex -= (endIndex -
+          text.length +
+          1); // Điều chỉnh vị trí bắt đầu nếu endIndex vượt quá biên
+      endIndex = text.length - 1;
+    }
+
+    // Lấy phần của văn bản từ vị trí bắt đầu đến vị trí kết thúc
+    String phrase = text.length > 15 ? text.substring(startIndex, endIndex + 1) : '';
+    return phrase;
+  }
+  return '';
+}

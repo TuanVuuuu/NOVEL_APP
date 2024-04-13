@@ -1,4 +1,4 @@
-import 'package:audiobook/commponent/item_novel_widget.dart';
+import 'package:audiobook/view/widget/item_novel_widget.dart';
 import 'package:audiobook/commponent/loading_shimmer/vertical_item_novel_loading_shimmer.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/utils/enum_constants.dart';

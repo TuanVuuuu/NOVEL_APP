@@ -30,6 +30,7 @@ class _TabBarManagerState extends State<TabBarManager> {
     'Khám phá',
     'Tủ sách',
   ];
+  bool canPop = false;
 
   @override
   void initState() {
@@ -107,64 +108,70 @@ class _TabBarManagerState extends State<TabBarManager> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _appbar,
-      body: IndexedStack(
-        index: menuIndex,
-        children: [
-          HomePage(
-            pageCurrent: (page) {
-              setState(() {
-                pageCurrent = page;
-              });
-            },
-            setCurrentPage: pageCurrent,
-            audioState: (style, chapter, chapterList, index) {
-              setState(() {
-                audioStyle = style;
-                chapterListCurrent = chapterList;
-                chapterIndex = index;
-                chapterData = chapter;
-              });
-            },
-            onTapNovel: (novel) {
-              setState(() {
-                novelCurrent = novel;
-              });
-            },
-          ),
-          LibraryNovelPage(
-            pageCurrent: (page) {
-              setState(() {
-                pageLibCurrent = page;
-              });
-            },
-            setCurrentPage: pageLibCurrent,
-          ),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.transparent,
-        height: kBottomNavigationBarHeight +
-            (Platform.isAndroid ? 2 : 36) +
-            (audioStyle != AudioStyle.none
-                ? (audioStyle == AudioStyle.player
-                    ? sizeSystem(context).height
-                    : 80)
-                : 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+    return PopScope(
+      canPop: canPop,
+      onPopInvoked: (didPop) {
+        return onBackPress();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _appbar,
+        body: IndexedStack(
+          index: menuIndex,
           children: [
-            if (audioStyle != AudioStyle.none) ...[
-              audioStyle == AudioStyle.player
-                  ? _buildPlayer(context, AudioStyle.player)
-                  : _buildPlayer(context, AudioStyle.miniplayer)
-            ] else ...[
-              const SizedBox()
-            ],
-            if (audioStyle != AudioStyle.player) _buildBottomNavigationBar(),
+            HomePage(
+              pageCurrent: (page) {
+                setState(() {
+                  pageCurrent = page;
+                });
+              },
+              setCurrentPage: pageCurrent,
+              audioState: (style, chapter, chapterList, index) {
+                setState(() {
+                  audioStyle = style;
+                  chapterListCurrent = chapterList;
+                  chapterIndex = index;
+                  chapterData = chapter;
+                });
+              },
+              onTapNovel: (novel) {
+                setState(() {
+                  novelCurrent = novel;
+                });
+              },
+            ),
+            LibraryNovelPage(
+              pageCurrent: (page) {
+                setState(() {
+                  pageLibCurrent = page;
+                });
+              },
+              setCurrentPage: pageLibCurrent,
+            ),
           ],
+        ),
+        bottomNavigationBar: Container(
+          color: Colors.transparent,
+          height: kBottomNavigationBarHeight +
+              (Platform.isAndroid ? 2 : 36) +
+              (audioStyle != AudioStyle.none
+                  ? (audioStyle == AudioStyle.player
+                      ? sizeSystem(context).height
+                      : 80)
+                  : 0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (audioStyle != AudioStyle.none) ...[
+                audioStyle == AudioStyle.player
+                    ? _buildPlayer(context, AudioStyle.player)
+                    : _buildPlayer(context, AudioStyle.miniplayer)
+              ] else ...[
+                const SizedBox()
+              ],
+              if (audioStyle != AudioStyle.player) _buildBottomNavigationBar(),
+            ],
+          ),
         ),
       ),
     );
@@ -221,5 +228,35 @@ class _TabBarManagerState extends State<TabBarManager> {
         ),
       ],
     );
+  }
+
+  void onBackPress() {
+    if ((pageCurrent) == PageCurrent.novel) {
+      setState(() {
+        pageCurrent = PageCurrent.dashboard;
+        canPop = false;
+      });
+    }
+
+    if ((pageLibCurrent) == PageCurrent.novel) {
+      setState(() {
+        pageCurrent = PageCurrent.libdashboard;
+      });
+      canPop = false;
+    }
+
+    if (pageCurrent == PageCurrent.chapterlist) {
+      setState(() {
+        pageCurrent = PageCurrent.novel;
+      });
+      canPop = false;
+    }
+
+    if (pageCurrent == PageCurrent.audio || audioStyle == AudioStyle.player) {
+      setState(() {
+        audioStyle = AudioStyle.miniplayer;
+      });
+      canPop = false;
+    }
   }
 }

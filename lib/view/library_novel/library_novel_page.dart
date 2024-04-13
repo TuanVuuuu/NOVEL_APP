@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:audiobook/commponent/flutter_spinkit/src/circle.dart';
-import 'package:audiobook/commponent/item_novel_widget.dart';
+import 'package:audiobook/view/widget/item_novel_widget.dart';
 import 'package:audiobook/model/chapter.dart';
 import 'package:audiobook/model/novel.dart';
 import 'package:audiobook/model/novel_detail.dart';
