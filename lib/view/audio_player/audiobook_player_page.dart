@@ -3,23 +3,16 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:audiobook/model/chapter.dart';
-import 'package:audiobook/model/chapter_content.dart';
-import 'package:audiobook/model/hive/chapter_item.dart';
 import 'package:audiobook/model/novel.dart';
-import 'package:audiobook/src/data/service/local/hive_service.dart';
-import 'package:audiobook/src/shared/hive/setup_locator.dart';
 import 'package:audiobook/utils/size_extensions.dart';
 import 'package:audiobook/utils/text_extensions.dart';
 import 'package:audiobook/utils/time_extensions.dart';
 import 'package:audiobook/utils/enum_constants.dart';
-import 'package:audiobook/view/chapter_detail/cubit/chapter_detail_cubit.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:get/get.dart';
-import 'package:marquee/marquee.dart';
+// import 'package:marquee/marquee.dart';
 
 class AudiobookPlayerPage extends StatefulWidget {
   const AudiobookPlayerPage({
@@ -33,10 +26,23 @@ class AudiobookPlayerPage extends StatefulWidget {
     required this.chapterIndex,
     required this.chapterArg,
     required this.audioStyle,
+    required this.flutterTts,
+    this.onStop,
+    this.onSpeak,
+    this.onPause,
+    this.onMultiStop,
+    this.ttsState,
+    this.textInput,
+    this.end,
+    this.onPreviousChapter,
+    this.onNextChapter,
+    this.setEndListener,
+    this.endSession,
   });
 
   final Function()? onDispose;
   final Function()? onTapBack;
+  final Function()? onStop;
   final Novel? novelData;
   final Function(AudioStyle audioStyle)? onTapDown;
   final Function(AudioStyle audioStyle)? onTap;
@@ -44,6 +50,17 @@ class AudiobookPlayerPage extends StatefulWidget {
   final int chapterIndex;
   final Chapter chapterArg;
   final AudioStyle audioStyle;
+  final FlutterTts flutterTts;
+  final Function()? onSpeak;
+  final Function()? onPause;
+  final Function()? onMultiStop;
+  final TtsState? ttsState;
+  final String? textInput;
+  final int? end;
+  final Function()? onPreviousChapter;
+  final Function()? onNextChapter;
+  final Function(dynamic endData)? setEndListener;
+  final int? endSession;
 
   @override
   State<AudiobookPlayerPage> createState() => _AudiobookPlayerPageState();
@@ -51,268 +68,72 @@ class AudiobookPlayerPage extends StatefulWidget {
 
 class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
   AudioStyle audioStyle = AudioStyle.player;
-  String? voiceTextInput = 'Vui lòng đợi...';
 
-  late FlutterTts flutterTts;
   String? language;
   String? engine;
-  double volume = 0.5;
-  double pitch = 1.0;
-  double rate = 0.5;
+
   bool isCurrentLanguageInstalled = false;
 
-  int end = 0;
-  int endSession = 0;
   String wordCurrent = '';
-  int numberSpeak = 0;
 
-  TtsState ttsState = TtsState.stopped;
+  List<String> listChapterContent = [];
 
-  get isPlaying => ttsState == TtsState.playing;
-  get isStopped => ttsState == TtsState.stopped;
-  get isPaused => ttsState == TtsState.paused;
-  get isContinued => ttsState == TtsState.continued;
+  String? chapterNameNovel = '';
+  String currentWord = '';
 
   bool get isIOS => !kIsWeb && Platform.isIOS;
   bool get isAndroid => !kIsWeb && Platform.isAndroid;
   bool get isWindows => !kIsWeb && Platform.isWindows;
   bool get isWeb => kIsWeb;
 
-  late ChapterContent chapterContent = ChapterContent();
-  int chapterIndexCurrent = 0;
-  LoadState loadState = LoadState.none;
-  List<String> listChapterContent = [];
-  final HiveService _hiveService = locator<HiveService>();
-  String? nameNovel = '';
-  String? chapterNameNovel = '';
-  String currentWord = '';
+  get isPlaying => widget.ttsState == TtsState.playing;
+  get isStopped => widget.ttsState == TtsState.stopped;
+  get isPaused => widget.ttsState == TtsState.paused;
+  get isContinued => widget.ttsState == TtsState.continued;
+
+  int end = 0;
 
   @override
   initState() {
     super.initState();
-    initTts();
-    nameNovel = widget.novelData?.title;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      chapterIndexCurrent = widget.chapterIndex;
-      bool hasLocalChapterData = await checkLocalChapterData();
-      if (!hasLocalChapterData) {
-        Get.find<ChapterDetailCubit>().getChapterContent(
-            href: widget.chapterArg.chapterLink?.split('/v1/')[1] ?? '');
-      }
-    });
   }
 
-  Future<bool> checkLocalChapterData({String? href}) async {
-    final listChaptersLocal = await _hiveService.getAllChapters();
-    bool foundMatchingChapter = false;
-    final String? checkHref = href ??
-        widget.listChapterArg[chapterIndexCurrent].chapterLink
-            ?.split('/v1/')[1];
+  Future<dynamic> _getLanguages() async => await widget.flutterTts.getLanguages;
 
-    for (var chapterLocal in listChaptersLocal) {
-      if (chapterLocal.href == checkHref) {
-        setState(() {
-          loadState = LoadState.loadSuccess;
-          chapterContent = ChapterContent(
-              title: chapterLocal.chapterTitle,
-              text: chapterLocal.chapterText,
-              href: chapterLocal.href);
-
-          _stop();
-          voiceTextInput = mergeChapterText(chapterContent.text ?? []);
-          _speak();
-        });
-        foundMatchingChapter = true;
-      }
-    }
-
-    return foundMatchingChapter;
-  }
-
-  initTts() {
-    flutterTts = FlutterTts();
-
-    _setAwaitOptions();
-
-    if (isAndroid) {
-      _getDefaultEngine();
-      _getDefaultVoice();
-    }
-
-    if (isPlaying) {
-      _stop();
-    }
-
-    flutterTts.setStartHandler(() {
-      setState(() {
-        if (kDebugMode) {
-          print("Playing");
-        }
-        ttsState = TtsState.playing;
-      });
-    });
-
-    if (isAndroid) {
-      flutterTts.setInitHandler(() {
-        setState(() {
-          if (kDebugMode) {
-            print("TTS Initialized");
-          }
-        });
-      });
-    }
-
-    flutterTts.setCompletionHandler(() {
-      setState(() {
-        if (kDebugMode) {
-          print("Complete");
-        }
-        endSession = end;
-        ttsState = TtsState.stopped;
-      });
-    });
-
-    flutterTts.setCancelHandler(() {
-      setState(() {
-        if (kDebugMode) {
-          print("Cancel");
-        }
-        ttsState = TtsState.stopped;
-      });
-    });
-
-    flutterTts.setPauseHandler(() {
-      setState(() {
-        if (kDebugMode) {
-          print("Paused");
-        }
-        ttsState = TtsState.paused;
-      });
-    });
-
-    flutterTts.setContinueHandler(() {
-      setState(() {
-        if (kDebugMode) {
-          print("Continued");
-        }
-        ttsState = TtsState.continued;
-      });
-    });
-
-    flutterTts.setErrorHandler((msg) {
-      setState(() {
-        if (kDebugMode) {
-          print("error: $msg");
-        }
-        ttsState = TtsState.stopped;
-      });
-    });
-  }
-
-  Future<dynamic> _getLanguages() async => await flutterTts.getLanguages;
-
-  Future<dynamic> _getEngines() async => await flutterTts.getEngines;
-
-  Future _getDefaultEngine() async {
-    var engine = await flutterTts.getDefaultEngine;
-    if (engine != null) {
-      if (kDebugMode) {
-        print(engine);
-      }
-    }
-  }
-
-  Future _getDefaultVoice() async {
-    var voice = await flutterTts.getDefaultVoice;
-    if (voice != null) {
-      if (kDebugMode) {
-        print(voice);
-      }
-    }
-  }
-
-  Future _speak() async {
-    await flutterTts.setVolume(volume);
-    await flutterTts.setSpeechRate(rate);
-    await flutterTts.setPitch(pitch);
-    setState(() {
-      if (isStopped) {
-        endSession = 0;
-        end = 0;
-      }
-    });
-    if (voiceTextInput != null) {
-      if (voiceTextInput!.isNotEmpty) {
-        String text = voiceTextInput!;
-        // Kiểm tra chiều dài của đoạn văn
-        if (text.length > 3500) {
-          // Tách đoạn văn thành các phần nhỏ không vượt quá 3500 ký tự
-          List<String> chunks = splitTextIntoChunks(text);
-          setState(() {
-            ttsState = TtsState.playing;
-            numberSpeak = chunks.length;
-          });
-          // Đọc lần lượt các phần nhỏ
-          for (String chunk in chunks) {
-            if (ttsState != TtsState.stopped && ttsState != TtsState.paused) {
-              await flutterTts.awaitSpeakCompletion(true);
-              await flutterTts.speak(chunk);
-            }
-          }
-        } else {
-          setState(() {
-            numberSpeak = 1;
-          });
-          await flutterTts.speak(text);
-        }
-      }
-    }
-  }
-
-  Future _setAwaitOptions() async {
-    await flutterTts.awaitSpeakCompletion(true);
-  }
-
-  Future _stop() async {
-    var result = await flutterTts.stop();
-    if (result == 1) setState(() => ttsState = TtsState.stopped);
-  }
-
-  Future _pause() async {
-    var result = await flutterTts.pause();
-    if (result == 1) setState(() => ttsState = TtsState.paused);
-  }
+  Future<dynamic> _getEngines() async => await widget.flutterTts.getEngines;
 
   @override
   void dispose() {
     super.dispose();
-    flutterTts.stop();
+    widget.onStop?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isMiniPlayerMode = audioStyle == AudioStyle.miniplayer;
 
-    flutterTts.setProgressHandler(
-        (String text, int startOffset, int endOffset, String word) {
-      if (word != "") {
-        setState(() {
-          currentWord = word;
-          end = endSession + endOffset;
-        });
-      }
-    });
+    if (end != widget.end && widget.end != null) {
+      setState(() {
+        end = widget.end!;
+      });
+    }
 
-    return widget.audioStyle == AudioStyle.player
-        ? Scaffold(body: _buildPlayer(context))
-        : isMiniPlayerMode
-            ? _buildMiniplayer(context)
-            : Scaffold(body: _buildPlayer(context));
+    return PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          audioStyle = AudioStyle.miniplayer;
+          widget.onTapDown?.call(audioStyle);
+        },
+        child: widget.audioStyle == AudioStyle.player
+            ? Scaffold(body: _buildPlayer(context))
+            : isMiniPlayerMode
+                ? _buildMiniplayer(context)
+                : Scaffold(body: _buildPlayer(context)));
   }
 
   Stack _buildPlayer(BuildContext context) {
     // Tính thời gian tổng cần để đọc hết đoạn văn
-    double totalReadingTime = voiceTextInput!.length / 10;
+    double totalReadingTime = widget.textInput!.length / 10;
 
     // Tính thời gian hiện tại của tiến trình đọc
     double currentReadingTime = (end ~/ 10).toDouble();
@@ -323,7 +144,6 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
         _futureBuilder(),
         _buildBackgroundImage(),
         _buildBackgroundBlur(context),
-        _buildListener(),
         Column(
           children: [
             _buildButtonDown(),
@@ -333,10 +153,10 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
             const SizedBox(height: 16),
             _buildChapterTitle(),
             const SizedBox(height: 16),
-            voiceTextInput != null && voiceTextInput != ""
+            widget.textInput != null && widget.textInput != ""
                 ? Text(
                     getCurrentPhrase(
-                        voiceTextInput ?? "", currentWord, 50, end),
+                        widget.textInput ?? "", currentWord, 50, end),
                     style: const TextStyle(color: Colors.grey),
                   )
                 : const SizedBox(),
@@ -392,36 +212,25 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
           ),
         ),
         IconButton(
-          onPressed: () async {
-            if (chapterIndexCurrent > 0) {
-              setState(() {
-                chapterIndexCurrent = chapterIndexCurrent - 1;
-              });
-              bool hasLocalChapterData = await checkLocalChapterData();
-              if (!hasLocalChapterData) {
-                Get.find<ChapterDetailCubit>().getChapterContent(
-                    href: widget.listChapterArg[chapterIndexCurrent].chapterLink
-                            ?.split('/v1/')[1] ??
-                        '');
-              }
-            }
+          onPressed: () {
+            widget.onPreviousChapter?.call();
           },
           icon: Icon(
             Icons.skip_previous,
-            color: chapterIndexCurrent > 0 ? Colors.white : Colors.grey,
+            color: widget.chapterIndex > 0 ? Colors.white : Colors.grey,
           ),
         ),
         InkWell(
           onTap: () {
             if (isPlaying) {
-              _pause();
+              widget.onPause?.call();
             } else {
-              _speak();
+              widget.onSpeak?.call();
             }
           },
           child: CircleAvatar(
             radius: 32,
-            backgroundColor: Colors.black,
+            // backgroundColor: Colors.black,
             foregroundColor: Colors.white,
             child: Icon(
               isPlaying ? Icons.pause : Icons.play_arrow,
@@ -430,22 +239,12 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
         ),
         IconButton(
           onPressed: () async {
-            if (chapterIndexCurrent < widget.listChapterArg.length - 1) {
-              setState(() {
-                chapterIndexCurrent = chapterIndexCurrent + 1;
-              });
-              bool hasLocalChapterData = await checkLocalChapterData();
-              if (!hasLocalChapterData) {
-                Get.find<ChapterDetailCubit>().getChapterContent(
-                    href: widget.listChapterArg[chapterIndexCurrent].chapterLink
-                            ?.split('/v1/')[1] ??
-                        '');
-              }
-            }
+            widget.onStop?.call();
+            widget.onNextChapter?.call();
           },
           icon: Icon(
             Icons.skip_next,
-            color: chapterIndexCurrent < widget.listChapterArg.length - 1
+            color: widget.chapterIndex < widget.listChapterArg.length - 1
                 ? Colors.white
                 : Colors.grey,
           ),
@@ -482,8 +281,8 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
       child: LinearProgressIndicator(
-        value: end / voiceTextInput!.length,
-        backgroundColor: Colors.grey,
+        value: end / widget.textInput!.length,
+        // backgroundColor: Colors.grey,
       ),
     );
   }
@@ -525,7 +324,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
   }
 
   void changedEnginesDropDownItem(String? selectedEngine) async {
-    await flutterTts.setEngine(selectedEngine!);
+    await widget.flutterTts.setEngine(selectedEngine!);
     language = null;
     setState(() {
       engine = selectedEngine;
@@ -561,9 +360,9 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
   void changedLanguageDropDownItem(String? selectedType) {
     setState(() {
       language = selectedType;
-      flutterTts.setLanguage(language!);
+      widget.flutterTts.setLanguage(language!);
       if (isAndroid) {
-        flutterTts
+        widget.flutterTts
             .isLanguageInstalled(language!)
             .then((value) => isCurrentLanguageInstalled = (value as bool));
       }
@@ -589,7 +388,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
 
   Text _buildNameNovel() {
     return Text(
-      nameNovel ?? '',
+      widget.novelData?.title ?? '',
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.bold,
@@ -667,7 +466,6 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
       width: double.infinity,
       child: Stack(
         children: [
-          _buildListener(),
           const Divider(
             height: 2,
             color: Colors.grey,
@@ -741,9 +539,9 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
                     InkWell(
                       onTap: () {
                         if (isPlaying) {
-                          _pause();
+                          widget.onPause?.call();
                         } else {
-                          _speak();
+                          widget.onSpeak?.call();
                         }
                       },
                       child: Icon(
@@ -755,7 +553,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
                     const SizedBox(width: 10),
                     InkWell(
                       onTap: () async {
-                        multiStop();
+                        widget.onMultiStop?.call();
                         widget.onDispose?.call();
                       },
                       child: const Icon(
@@ -786,70 +584,22 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
           maxLines: 1,
           minFontSize: 16,
           overflowReplacement: SizedBox(
-            height: height ?? 28,
-            child: Marquee(
-              text: title ?? widget.novelData?.title ?? 'Loading...',
-              style: textStyle ??
-                  const TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold),
-              blankSpace: 30,
-              startAfter: const Duration(seconds: 2),
-              pauseAfterRound: const Duration(seconds: 2),
-            ),
-          ),
+              height: height ?? 28,
+              child:
+                  // Marquee(
+                  //   text:
+                  Text(
+                title ?? widget.novelData?.title ?? 'Loading...',
+                style: textStyle ??
+                    const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+              )
+
+              //   blankSpace: 30,
+              //   startAfter: const Duration(seconds: 2),
+              //   pauseAfterRound: const Duration(seconds: 2),
+              // ),
+              ),
         ));
-  }
-
-  Widget _buildListener() {
-    return BlocListener(
-      bloc: Get.find<ChapterDetailCubit>(),
-      listener: (context, state) async {
-        if (state is GetChapterContentInProgress) {
-          setState(() {
-            loadState = LoadState.loading;
-          });
-          return;
-        }
-
-        if (state is GetChapterContentFailure) {
-          setState(() {
-            loadState = LoadState.loadFailure;
-          });
-          return;
-        }
-
-        if (state is GetChapterContentSuccess) {
-          setState(() {
-            loadState = LoadState.loadSuccess;
-            chapterContent = state.response;
-            chapterContent.href = widget
-                    .listChapterArg[chapterIndexCurrent].chapterLink
-                    ?.split('/v1/')[1] ??
-                '';
-
-            nameNovel = chapterContent.title;
-          });
-
-          final ChapterItem chapterItem = ChapterItem(
-              chapterTitle: chapterContent.title,
-              href: chapterContent.href,
-              chapterText: chapterContent.text);
-
-          await _hiveService.addChapter(chapterItem);
-          _stop();
-          voiceTextInput = mergeChapterText(chapterContent.text ?? []);
-          _speak();
-          return;
-        }
-      },
-      child: Container(),
-    );
-  }
-
-  Future<void> multiStop() async {
-    for (int i = 0; i <= numberSpeak; i++) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      _stop();
-    }
   }
 }

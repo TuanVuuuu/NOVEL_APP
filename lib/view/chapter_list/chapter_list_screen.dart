@@ -40,6 +40,7 @@ class _ChapterListScreenState extends State<ChapterListScreen>
   late Size size;
   late TabController _tabController;
   final HiveService _hiveService = locator<HiveService>();
+  LoadState loadState = LoadState.none;
 
   @override
   void initState() {

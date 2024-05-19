@@ -1,6 +1,4 @@
 import 'package:audiobook/model/chapter.dart';
-import 'package:audiobook/view/text_to_speech/text_to_speech.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CustomSliverAppBar extends StatelessWidget {
@@ -43,13 +41,6 @@ class CustomSliverAppBar extends StatelessWidget {
         IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              showCupertinoDialog(
-                  context: context,
-                  builder: (context) {
-                    return TextToSpeechPage(
-                      voiceTextInput: chapterContent,
-                    );
-                  });
             }),
       ],
       expandedHeight: 80,

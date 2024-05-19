@@ -56,5 +56,11 @@
 			"type": "shell",
 			"command": "flutter clean"
 		},
+
+		{
+			"label": "pod_install",
+			"type": "shell",
+			"command": "cd ios/; pod install"
+		},  
 	]
 }
