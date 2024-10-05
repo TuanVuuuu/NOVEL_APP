@@ -89,6 +89,7 @@ flutter:
     - assets/novel_trend.json
     - assets/novel_van_giao_to_su.json
     - assets/novel_van_giao_to_su_chapter_1.json
+    - assets/thumb/thumb.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
