@@ -1,4 +1,4 @@
-# audiobook
+# AudioNovel
 
 A mobile application for reading and listening to stories offline.
 
