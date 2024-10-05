@@ -71,13 +71,13 @@ class _TextToSpeechPageState extends State<TextToSpeechPage> {
     });
 
     if (isAndroid) {
-      flutterTts.setInitHandler(() {
-        setState(() {
-          if (kDebugMode) {
-            print("TTS Initialized");
-          }
-        });
-      });
+      // flutterTts.setInitHandler(() {
+      //   setState(() {
+      //     if (kDebugMode) {
+      //       print("TTS Initialized");
+      //     }
+      //   });
+      // });
     }
 
     flutterTts.setCompletionHandler(() {

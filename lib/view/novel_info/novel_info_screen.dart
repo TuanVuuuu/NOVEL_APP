@@ -389,7 +389,7 @@ class _NovelInfoScreenState extends State<NovelInfoScreen> {
                           style: const TextStyle(color: Colors.white),
                           textAlign: TextAlign.justify,
                         );
-                      }).toList(),
+                      }),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -428,7 +428,7 @@ class _NovelInfoScreenState extends State<NovelInfoScreen> {
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
             Padding(

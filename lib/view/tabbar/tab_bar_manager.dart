@@ -201,7 +201,38 @@ class _TabBarManagerState extends State<TabBarManager> {
                   pageLibCurrent = page;
                 });
               },
+              onTapNovel: (novel) {
+                setState(() {
+                  novelCurrent = novel;
+                });
+              },
               setCurrentPage: pageLibCurrent,
+              audioState: (style, chapter, chapterList, index) {
+                setState(() {
+                  audioStyle = AudioStyle.player;
+                  chapterListCurrent = chapterList;
+                  chapterIndex = index;
+                  chapterData = chapter;
+
+                  nameNovel = novelCurrent.title;
+                  chapterIndexCurrent = chapterIndex ?? 0;
+                });
+
+                bool hasLocalChapterData = false;
+                checkLocalChapterData()
+                    .then((value) => hasLocalChapterData = value)
+                    .whenComplete(() {
+                  if (!hasLocalChapterData) {
+                    Get.find<ChapterDetailCubit>().getChapterContent(
+                        href: (chapterData ?? Chapter())
+                                .chapterLink
+                                ?.split('/v1/')[1] ??
+                            '');
+                  }
+                });
+                multiStop();
+                initTts();
+              },
             ),
           ],
         ),
@@ -372,13 +403,13 @@ class _TabBarManagerState extends State<TabBarManager> {
     });
 
     if (isAndroid) {
-      flutterTts.setInitHandler(() {
-        setState(() {
-          if (kDebugMode) {
-            print("TTS Initialized");
-          }
-        });
-      });
+      // flutterTts.setInitHandler(() {
+      //   setState(() {
+      //     if (kDebugMode) {
+      //       print("TTS Initialized");
+      //     }
+      //   });
+      // });
     }
 
     flutterTts.setCompletionHandler(() {

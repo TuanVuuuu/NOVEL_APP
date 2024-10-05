@@ -4,11 +4,11 @@ import 'package:shimmer/shimmer.dart';
 
 class ItemHorizionalNovelLoadingShimmer extends StatelessWidget {
   const ItemHorizionalNovelLoadingShimmer({
-    Key? key,
+    super.key,
     this.padding = const EdgeInsets.all(10.0),
     this.itemCount = 20,
     this.color,
-  }) : super(key: key);
+  });
 
   final EdgeInsets padding;
   final int itemCount;

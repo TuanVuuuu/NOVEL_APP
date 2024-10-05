@@ -18,11 +18,10 @@ class ChapterScreen extends StatefulWidget {
   final int chapterIndex;
 
   const ChapterScreen(
-      {Key? key,
+      {super.key,
       required this.chapterArg,
       required this.listChapterArg,
-      required this.chapterIndex})
-      : super(key: key);
+      required this.chapterIndex});
 
   @override
   State<ChapterScreen> createState() => _ChapterScreenState();
@@ -40,11 +39,12 @@ class _ChapterScreenState extends State<ChapterScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       chapterIndexCurrent = widget.chapterIndex;
-      bool hasLocalChapterData = await checkLocalChapterData();
-      if (!hasLocalChapterData) {
-        Get.find<ChapterDetailCubit>().getChapterContent(
-            href: widget.chapterArg.chapterLink?.split('/v1/')[1] ?? '');
-      }
+      await checkLocalChapterData().then((hasLocalChapterData) {
+        if (!hasLocalChapterData) {
+          Get.find<ChapterDetailCubit>().getChapterContent(
+              href: widget.chapterArg.chapterLink?.split('/v1/')[1] ?? '');
+        }
+      });
     });
   }
 

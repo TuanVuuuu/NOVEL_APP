@@ -4,12 +4,12 @@ import 'package:flutter/widgets.dart';
 
 class SpinKitHourGlass extends StatefulWidget {
   const SpinKitHourGlass({
-    Key? key,
+    super.key,
     required this.color,
     this.size = 50.0,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
-  }) : super(key: key);
+  });
 
   final Color color;
   final double size;

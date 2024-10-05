@@ -13,13 +13,13 @@ import '../../main.dart';
 
 class ChapterListScreen extends StatefulWidget {
   const ChapterListScreen({
-    Key? key,
+    super.key,
     this.chapterList,
     this.onTapBack,
     this.onTapHandle,
     this.handle,
     required this.novelData,
-  }) : super(key: key);
+  });
 
   final List<Chapter>? chapterList;
   final Function()? onTapBack;

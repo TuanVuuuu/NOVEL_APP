@@ -4,12 +4,12 @@ import 'package:flutter/widgets.dart';
 
 class SpinKitPouringHourglass extends StatefulWidget {
   const SpinKitPouringHourglass({
-    Key? key,
+    super.key,
     required this.color,
     this.size = 50.0,
     this.duration = const Duration(milliseconds: 2400),
     this.controller,
-  }) : super(key: key);
+  });
 
   final double size;
   final Color color;

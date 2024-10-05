@@ -13,11 +13,11 @@ import 'tweens/delay_tween.dart';
 
 class SpinKitLinearProgress extends StatefulWidget {
   const SpinKitLinearProgress({
-    Key? key,
+    super.key,
     required this.color,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
-  }) : super(key: key);
+  });
 
   final Color? color;
   final Duration duration;

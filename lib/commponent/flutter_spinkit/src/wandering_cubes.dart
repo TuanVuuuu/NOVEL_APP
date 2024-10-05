@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class SpinKitWanderingCubes extends StatefulWidget {
   const SpinKitWanderingCubes({
-    Key? key,
+    super.key,
     this.color,
     this.shape = BoxShape.rectangle,
     this.size = 50.0,
@@ -12,8 +12,7 @@ class SpinKitWanderingCubes extends StatefulWidget {
             !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
                 !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
-        offset = size * 0.75,
-        super(key: key);
+        offset = size * 0.75;
 
   final Color? color;
   final BoxShape shape;

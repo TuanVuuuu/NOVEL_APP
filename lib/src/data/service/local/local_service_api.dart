@@ -22,7 +22,7 @@ class LocalServiceApi implements LocalServiceRepository {
         final List<dynamic> jsonData = json.decode(response.body);
         List<Novel> novels =
             jsonData.map((json) => Novel.fromJson(json)).toList();
-        apiLoggerStateSuccess('getListNovel');
+        apiLoggerStateSuccess('getListNovel', url.toString());
         return novels;
       } else {
         throw Exception(

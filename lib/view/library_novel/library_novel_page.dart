@@ -16,13 +16,22 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class LibraryNovelPage extends StatefulWidget {
   const LibraryNovelPage({
-    Key? key,
+    super.key,
     this.pageCurrent,
     this.setCurrentPage,
-  }) : super(key: key);
+    this.audioState,
+    this.onTapNovel,
+  });
 
   final Function(PageCurrent page)? pageCurrent;
   final PageCurrent? setCurrentPage;
+  final Function(
+    AudioStyle audioStyle,
+    Chapter chapter,
+    List<Chapter>? chapterList,
+    int? index,
+  )? audioState;
+  final Function(Novel novel)? onTapNovel;
 
   @override
   State<LibraryNovelPage> createState() => _LibraryNovelPageState();
@@ -35,6 +44,8 @@ class _LibraryNovelPageState extends State<LibraryNovelPage> {
   Novel novelCurrent = Novel();
   List<Chapter>? chapterList = [];
   NovelDetail? novelDataResponse = NovelDetail();
+  AudioStyle audioStyle = AudioStyle.none;
+  NovelHandle? novelHandle = NovelHandle.read;
 
   @override
   void initState() {
@@ -135,6 +146,11 @@ class _LibraryNovelPageState extends State<LibraryNovelPage> {
           });
         },
         oldNovelData: novelDataResponse,
+        onHandle: (handle) {
+          setState(() {
+            novelHandle = handle;
+          });
+        },
       );
     }
 
@@ -142,10 +158,17 @@ class _LibraryNovelPageState extends State<LibraryNovelPage> {
       return ChapterListScreen(
         novelData: novelCurrent,
         chapterList: chapterList,
+        handle: novelHandle,
         onTapBack: () {
           setState(() {
             pageCurrent = PageCurrent.novel;
             widget.pageCurrent?.call(pageCurrent);
+          });
+        },
+        onTapHandle: (chapter, chapterList, index) {
+          setState(() {
+            audioStyle = AudioStyle.player;
+            widget.audioState?.call(audioStyle, chapter, chapterList, index);
           });
         },
       );

@@ -21,12 +21,12 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
-    Key? key,
+    super.key,
     this.pageCurrent,
     this.setCurrentPage,
     this.audioState,
     this.onTapNovel,
-  }) : super(key: key);
+  });
 
   final Function(PageCurrent page)? pageCurrent;
   final PageCurrent? setCurrentPage;

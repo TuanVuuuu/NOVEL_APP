@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class SpinKitFoldingCube extends StatefulWidget {
   const SpinKitFoldingCube({
-    Key? key,
+    super.key,
     this.color,
     this.size = 50.0,
     this.itemBuilder,
@@ -11,8 +11,7 @@ class SpinKitFoldingCube extends StatefulWidget {
   })  : assert(
             !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
                 !(itemBuilder == null && color == null),
-            'You should specify either a itemBuilder or a color'),
-        super(key: key);
+            'You should specify either a itemBuilder or a color');
 
   final Color? color;
   final double size;

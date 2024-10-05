@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 class SpinKitRipple extends StatefulWidget {
   const SpinKitRipple({
-    Key? key,
+    super.key,
     this.color,
     this.size = 50.0,
     this.borderWidth = 6.0,
@@ -12,8 +12,7 @@ class SpinKitRipple extends StatefulWidget {
   })  : assert(
             !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
                 !(itemBuilder == null && color == null),
-            'You should specify either a itemBuilder or a color'),
-        super(key: key);
+            'You should specify either a itemBuilder or a color');
 
   final Color? color;
   final double size;

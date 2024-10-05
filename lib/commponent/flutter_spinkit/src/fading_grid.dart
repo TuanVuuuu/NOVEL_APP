@@ -3,7 +3,7 @@ import 'tweens/delay_tween.dart';
 
 class SpinKitFadingGrid extends StatefulWidget {
   const SpinKitFadingGrid({
-    Key? key,
+    super.key,
     this.color,
     this.shape = BoxShape.circle,
     this.size = 50.0,
@@ -13,8 +13,7 @@ class SpinKitFadingGrid extends StatefulWidget {
   })  : assert(
             !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
                 !(itemBuilder == null && color == null),
-            'You should specify either a itemBuilder or a color'),
-        super(key: key);
+            'You should specify either a itemBuilder or a color');
 
   final Color? color;
   final BoxShape shape;

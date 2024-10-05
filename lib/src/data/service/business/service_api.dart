@@ -17,11 +17,12 @@ class ServiceApi implements ServiceRepository {
         Uri.parse("https://novel-api-mo19.onrender.com/v1/novel/$href/");
 
     try {
-      apiLogger('getChapterContent', url.toString());
+      apiGetLogger('getChapterContent', url.toString());
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        apiLoggerStateSuccess('getChapterContent', url.toString());
         return ChapterContent.fromJson(data);
       } else {
         throw Exception('Failed to load data');
@@ -40,13 +41,14 @@ class ServiceApi implements ServiceRepository {
         "https://novel-api-mo19.onrender.com/v1/novel/de-cu/danh-sach/page-1");
 
     try {
-      apiLogger('getListNovel', url.toString());
+      apiGetLogger('getListNovel', url.toString());
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         List<Novel> novels =
             jsonData.map((json) => Novel.fromJson(json)).toList();
+        apiLoggerStateSuccess('getListNovel', url.toString());
         return novels;
       } else {
         throw Exception('Failed to load data');
@@ -65,13 +67,13 @@ class ServiceApi implements ServiceRepository {
         "https://novel-api-mo19.onrender.com/v1/novel/de-cu/danh-sach/top/page-1");
 
     try {
-      apiLogger('getListTopNovel', url.toString());
+      apiGetLogger('getListTopNovel', url.toString());
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         List<Novel> novels =
             jsonData.map((json) => Novel.fromJson(json)).toList();
-        apiLoggerStateSuccess('getListTopNovel');
+        apiLoggerStateSuccess('getListTopNovel', url.toString());
         return novels;
       } else {
         throw Exception('Failed to load data');
@@ -89,10 +91,11 @@ class ServiceApi implements ServiceRepository {
     final url = Uri.parse("https://novel-api-mo19.onrender.com$href/");
 
     try {
-      apiLogger('getNovelInfo', url.toString());
+      apiGetLogger('getNovelInfo', url.toString());
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        apiLoggerStateSuccess('getNovelInfo', url.toString());
         return NovelDetail.fromJson(data.first);
       } else {
         throw Exception('Failed to load data');
@@ -111,13 +114,14 @@ class ServiceApi implements ServiceRepository {
         "https://novel-api-mo19.onrender.com/v1/novel/search/$title/page-1");
 
     try {
-      apiLogger('searchNovelByTitle', url.toString());
+      apiGetLogger('searchNovelByTitle', url.toString());
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonData = json.decode(response.body);
         List<Novel> novels =
             jsonData.map((json) => Novel.fromJson(json)).toList();
+        apiLoggerStateSuccess('searchNovelByTitle', url.toString());
         return novels;
       } else {
         throw Exception('Failed to load data');

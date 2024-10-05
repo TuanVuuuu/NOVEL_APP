@@ -2,6 +2,7 @@
 
 import 'package:audiobook/src/shared/contants.dart';
 import 'package:audiobook/src/shared/shared_preference/shared_preferences_utils.dart';
+import 'package:audiobook/utils/log_extensions.dart';
 
 class SharedPrefManager {
   SharedPrefManager._();
@@ -12,7 +13,9 @@ class SharedPrefManager {
     * Response: List<String>
   */
   static Future<List<String>?> getLocalChapterData() async {
+    localGetLogger('getLocalChapterData', 'CHAPTER_DATA');
     final result = await SharedPrefUtils.getStringList(key: CHAPTER_DATA);
+    localLoggerStateSuccess('getLocalChapterData', '$result');
     return result;
   }
 
@@ -31,7 +34,9 @@ class SharedPrefManager {
     * Response: List<String>
   */
   static Future<List<String>?> getLocalNovelData() async {
+    localGetLogger('getLocalNovelData', 'NOVEL_DATA');
     final result = await SharedPrefUtils.getStringList(key: NOVEL_DATA);
+    localLoggerStateSuccess('getLocalNovelData', '$result');
     return result;
   }
 

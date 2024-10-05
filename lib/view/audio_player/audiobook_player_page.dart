@@ -282,7 +282,7 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 16, right: 16),
       child: LinearProgressIndicator(
         value: end / widget.textInput!.length,
-        // backgroundColor: Colors.grey,
+        backgroundColor: Colors.grey,
       ),
     );
   }
@@ -594,7 +594,6 @@ class _AudiobookPlayerPageState extends State<AudiobookPlayerPage> {
                     const TextStyle(
                         color: Colors.black, fontWeight: FontWeight.bold),
               )
-
               //   blankSpace: 30,
               //   startAfter: const Duration(seconds: 2),
               //   pauseAfterRound: const Duration(seconds: 2),

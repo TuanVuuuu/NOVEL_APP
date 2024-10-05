@@ -5,7 +5,7 @@ enum SpinKitWaveType { start, end, center }
 
 class SpinKitWave extends StatefulWidget {
   const SpinKitWave({
-    Key? key,
+    super.key,
     this.color,
     this.type = SpinKitWaveType.start,
     this.size = 50.0,
@@ -17,8 +17,7 @@ class SpinKitWave extends StatefulWidget {
             !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
                 !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
-        assert(itemCount >= 2, 'itemCount Cant be less then 2 '),
-        super(key: key);
+        assert(itemCount >= 2, 'itemCount Cant be less then 2 ');
 
   final Color? color;
   final int itemCount;
@@ -126,11 +125,11 @@ class _SpinKitWaveState extends State<SpinKitWave>
 
 class ScaleYWidget extends AnimatedWidget {
   const ScaleYWidget({
-    Key? key,
+    super.key,
     required Animation<double> scaleY,
     required this.child,
     this.alignment = Alignment.center,
-  }) : super(key: key, listenable: scaleY);
+  }) : super(listenable: scaleY);
 
   final Widget child;
   final Alignment alignment;

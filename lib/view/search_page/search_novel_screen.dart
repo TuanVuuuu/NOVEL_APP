@@ -12,9 +12,9 @@ import '../../commponent/flutter_spinkit/src/circle.dart';
 
 class SearchNovelScreen extends StatefulWidget {
   const SearchNovelScreen({
-    Key? key,
+    super.key,
     required this.onTapNovel,
-  }) : super(key: key);
+  });
 
   final Function(Novel novel)? onTapNovel;
 
